@@ -16,13 +16,15 @@ services:
     build: .
     ports:
       - "3000:3000"
+    command: npm run dev
     volumes:
-      - ./src:/app/src
-      - ./public:/app/public
+      - .:/app
+      - ./node_modules:/app/node_modules
     restart: always
     depends_on:
       - db
     environment:
+      NODE_ENV: development
       DATABASE_URL: postgres://root:pwd@db:5432/app
 
 volumes:

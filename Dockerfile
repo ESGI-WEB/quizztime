@@ -5,8 +5,8 @@ WORKDIR /app
 COPY package.json .
 COPY package-lock.json .
 
+RUN npm install -g next
 RUN npm install
 
 COPY . .
-
-CMD ["npm", "run", "dev"]
+RUN npm run build
