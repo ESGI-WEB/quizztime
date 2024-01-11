@@ -1,9 +1,14 @@
-FROM node:20.0.0-alpine as build
+FROM node:20.0.0-alpine
 
-WORKDIR /home/node
+WORKDIR /app
+
+COPY package.json .
+COPY package-lock.json .
+
+RUN npm install
 
 COPY . .
 
-RUN npm install
-RUN npm run build
+EXPOSE 3000
+
 CMD ["npm", "run", "dev"]
