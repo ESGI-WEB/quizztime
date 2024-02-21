@@ -12,6 +12,8 @@ services:
 
   express:
     container_name: express
+    depends_on:
+      - db
     image: 'node:20'
     ports:
       - "8080:8080"
@@ -26,6 +28,8 @@ services:
       - -c
       - |
         npm install
+        npx prisma generate
+        npx prisma migrate deploy
         npm run dev
 
   react:
