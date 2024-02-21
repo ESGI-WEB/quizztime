@@ -1,5 +1,15 @@
 version: '3.8'
 services:
+  db:
+    container_name: db
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db
+
   express:
     container_name: express
     image: 'node:20'
@@ -10,12 +20,13 @@ services:
       - ./back:/usr/src/app
     environment:
       - NODE_ENV=development
+      - DATABASE_URL=postgres://user:password@db:5432/db
     command:
       - /bin/bash
       - -c
       - |
         npm install
-        npm start
+        npm run dev
 
   react:
     container_name: react

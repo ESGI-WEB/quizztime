@@ -6,11 +6,7 @@ export default function Header() {
     return (
         <nav className='header'>
             <div className='actions'>
-                <button onClick={() => navigate('/')}>Quizz d'aujourd'hui</button>
-                <button onClick={() => navigate('/cards')}>Liste des cartes</button>
-            </div>
-            <div className="avatar">
-                <span>JD</span>
+                <button onClick={() => navigate('/')}>Accueil</button>
             </div>
         </nav>
     )
