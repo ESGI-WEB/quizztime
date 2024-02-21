@@ -2,16 +2,29 @@ import {FormEvent, useState} from "react";
 import {TextField} from "@mui/material";
 import Button from "@mui/material/Button";
 import {useNavigate} from "react-router-dom";
+import useUserService from "../services/useUserService";
+import {tokenKey} from "../models/jwt.model";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [hasError, setHasError] = useState(false);
     const navigate = useNavigate();
+    const userService = useUserService();
 
     const sumbit = (e: FormEvent) => {
         e.preventDefault();
-        console.log(email, password);
+        if (!email || !password) {
+            setHasError(true);
+            return;
+        }
+        setHasError(false);
+        userService.login(email, password).then(({token}) => {
+            localStorage.setItem(tokenKey, token);
+            navigate("/");
+        }).catch(() => {
+            setHasError(true);
+        });
     }
 
     return (
@@ -29,6 +42,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
             />
+            {hasError && <p className="error">Formulaire invalide</p>}
 
             <Button
                 variant="contained"

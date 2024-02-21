@@ -6,9 +6,11 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import {useNavigate} from "react-router-dom";
+import useUserService from "../services/useUserService";
 
 export default function Header() {
     const navigate = useNavigate();
+    const userService = useUserService();
 
     return (
         <Box sx={{ flexGrow: 1 }}>
@@ -26,10 +28,17 @@ export default function Header() {
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         News
                     </Typography>
-                    <Button
+                    {!userService.currentUser() && <Button
                         color="inherit"
                         onClick={() => navigate("/login")}
-                    >Login</Button>
+                    >Login</Button>}
+                    {userService.currentUser() && <Button
+                        color="inherit"
+                        onClick={() => {
+                            userService.logout();
+                            navigate("/");
+                        }}
+                    >Logout</Button>}
                 </Toolbar>
             </AppBar>
         </Box>

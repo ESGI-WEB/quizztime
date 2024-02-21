@@ -4,6 +4,8 @@ const app = express();
 const port = process.env.PORT || 8080;
 const host = process.env.SERVER_HOST || 'http://localhost';
 const helloRouter = require('./src/routes/hello')();
+const loginRouter = require('./src/routes/login')();
+const usersRouter = require('./src/routes/users')();
 const errorMiddleware = require('./src/middlewares/errorMiddleware');
 const cors = require("cors");
 
@@ -12,6 +14,8 @@ app.use(express.json());
 
 // Routes
 app.use('/', helloRouter);
+app.use('/login', loginRouter);
+app.use('/users', usersRouter);
 
 app.use(errorMiddleware);
 
