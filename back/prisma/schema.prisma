@@ -19,6 +19,7 @@ model User {
   role     Role     @default(USER)
   password String
   answers  Answer[]
+  quizzes  Quiz[]
 }
 
 model Quiz {
@@ -27,6 +28,8 @@ model Quiz {
   questions Question[]
   passcode  String?    @unique
   maxUsers  Int?
+  ownerId   Int
+  owner     User       @relation(fields: [ownerId], references: [id])
 }
 
 model Question {
