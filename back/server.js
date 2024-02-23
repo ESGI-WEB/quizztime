@@ -41,6 +41,29 @@ io.on('connection', (socket) => {
     socket.on('join-room', ({roomId}) => {
         roomService.joinRoom(rooms, roomId, socket, io);
     });
+
+    socket.on('has-rooms-joined', (callback) => {
+        roomService.hasJoinedRooms(rooms, socket, io, callback);
+    });
+
+    socket.on('disconnecting', () => {
+        // for each room of the socket
+        // - check if room is empty to delete it from rooms
+        // - if room is not empty, emit room-updated event
+        for (const room of socket.rooms) {
+            const roomSize = io.sockets.adapter.rooms.get(room).size;
+            if (roomSize === 0) {
+                const index = rooms.findIndex(r => r.id === room);
+                if (index > -1) {
+                    rooms.splice(index, 1);
+                }
+            } else {
+                io.to(room).emit('room-updated', {
+                    'size': roomSize
+                });
+            }
+        }
+    });
 });
 
 // Middlewares

@@ -58,7 +58,7 @@ module.exports = {
         const bcrypt = require("bcryptjs");
         user.password = bcrypt.hashSync(user.password, 10);
 
-        return prisma.user.create({
+        const userCreated = prisma.user.create({
             data: {
                 email: user.email,
                 name: user.name,
@@ -66,5 +66,7 @@ module.exports = {
                 role: user.role
             }
         });
+        await prisma.$disconnect();
+        return userCreated;
     }
 }

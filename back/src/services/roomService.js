@@ -34,5 +34,22 @@ module.exports = {
             'size': io.sockets.adapter.rooms.get(room.id).size
         });
         return room;
+    },
+
+    hasJoinedRooms: (rooms, socket, io, callback) => {
+        const socketRoomsJoined = rooms.find(
+            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
+        )
+        console.log({socketRoomsJoined});
+
+        if (!socketRoomsJoined) {
+            callback(null);
+            return;
+        }
+
+        callback({
+            id: socketRoomsJoined.id,
+            quizId: socketRoomsJoined.quiz.id,
+        });
     }
 }
