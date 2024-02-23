@@ -9,6 +9,20 @@
 - Open your browser and go to `http://localhost:80` for frontend
 - Open your browser and go to `http://localhost:8080` for backend
 
+# Prisma
+- When docker is launched, prisma is automatically generated and creates the db according to the already existing migrations
+
+
+To create migration + update the database, run:
+```bash
+docker exec express npx prisma migrate dev --name <fill_migration_name>
+```
+
+To create a migration without updating database, run:
+```bash
+docker exec express npx prisma migrate dev --name <fill_migration_name> --create-only
+```
+
 # Contributions de l'équipe
 - Théo Dubuisson
 - Laurie Morin

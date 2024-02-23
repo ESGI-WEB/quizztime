@@ -19,6 +19,7 @@ const io = new Server(server, {
     }
 });
 const roomService = require('./src/services/roomService');
+const auth = require("./src/middlewares/auth");
 
 app.use(cors());
 app.use(express.json());
@@ -27,7 +28,7 @@ app.use(express.json());
 app.use('/', helloRouter);
 app.use('/login', loginRouter);
 app.use('/users', usersRouter);
-app.use('/quizzes', quizzesRouter);
+app.use('/quizzes', auth(), quizzesRouter);
 
 // Socket
 const rooms = [];

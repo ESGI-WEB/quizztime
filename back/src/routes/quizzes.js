@@ -6,7 +6,7 @@ module.exports = () => {
 
   router.get("/", async function (req, res, next) {
     try {
-      res.send(await quizService.getQuizzes())
+      res.send(await quizService.getQuizzes(req.user))
     } catch (e) {
       next(e);
     }
