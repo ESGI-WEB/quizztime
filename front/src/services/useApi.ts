@@ -18,20 +18,22 @@ const useApi = () => {
         }
 
         const response = await fetch(`${baseUrl}/${url}`, {...options, headers});
+
         if (response.ok) {
             // check if it's a 204 response
             if (response.status === 204) {
                 return;
             }
-
-            if (response.status === 401) {
-                localStorage.removeItem(tokenKey);
-                navigate('/login');
-                return;
-            }
-
             return response.json();
         }
+
+        if ([401, 403].includes(response.status)) {
+            localStorage.removeItem(tokenKey);
+            navigate('/login');
+            return;
+        }
+
+        console.log(response);
         const error = await response.json();
         throw new Error(error.detail ?? response.statusText ?? "An error occurred");
     }

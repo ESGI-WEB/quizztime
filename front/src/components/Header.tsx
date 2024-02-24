@@ -7,6 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import {useNavigate} from "react-router-dom";
 import useUserService from "../services/useUserService";
+import {PersonOff} from "@mui/icons-material";
 
 export default function Header(
     {
@@ -45,15 +46,21 @@ export default function Header(
                     {userService.currentUser() && <>
                         <Button
                             color="inherit"
+                            onClick={() => navigate("/create-room")}
+                        >Créer une salle</Button>
+                        <Button
+                            color="inherit"
+                            onClick={() => navigate("/quizzes")}
+                        >Mes Quizz</Button>
+                        <IconButton
+                            color="inherit"
                             onClick={() => {
                                 userService.logout();
                                 navigate("/");
                             }}
-                        >Déconnexion</Button>
-                        <Button
-                            color="inherit"
-                            onClick={() => navigate("/create-room")}
-                        >Créer une salle</Button>
+                        >
+                            <PersonOff/>
+                        </IconButton>
                     </>}
                 </Toolbar>
             </AppBar>
