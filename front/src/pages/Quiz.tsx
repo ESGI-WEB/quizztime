@@ -3,6 +3,7 @@ import {socket} from "../socket";
 import {FormEvent, useEffect, useState} from "react";
 import {Room} from "../models/room.model";
 import {TextField} from "@mui/material";
+import QuizStats from "../components/QuizStats";
 
 export default function Quiz() {
     const [code, setCode] = useState('');
@@ -34,12 +35,17 @@ export default function Quiz() {
         socket.on('room-joined', (room: Room) => {
             setRoom(room);
         });
+
+        return () => {
+            socket.off('room-joined');
+        }
     }, []);
 
     if (room) {
         return (
             <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto">
                 <p>Veuillez attendre le début du quizz</p>
+                <QuizStats/>
             </div>
         )
     }

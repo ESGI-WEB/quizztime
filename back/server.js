@@ -37,7 +37,7 @@ const socketsData = []; // {socketId: 'socketId', ...}
 io.on('connection', (socket) => {
     socket.on('create-room', async ({quizId}) => {
         // Todo add token + user name in extra data
-        rooms.push(await roomService.createRoom(quizId, socket));
+        rooms.push(await roomService.createRoom(quizId, socket, io));
     });
 
     socket.on('join-room', ({name, roomId}) => {
@@ -53,7 +53,7 @@ io.on('connection', (socket) => {
         // - check if room is empty to delete it from rooms
         // - if room is not empty, emit room-updated event
         for (const room of socket.rooms) {
-            const roomSize = io.sockets.adapter.rooms.get(room).size;
+            const roomSize = io.sockets.adapter.rooms.get(room).size - 1;
             if (roomSize === 0) {
                 const index = rooms.findIndex(r => r.id === room);
                 if (index > -1) {

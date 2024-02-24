@@ -1,7 +1,7 @@
 const {PrismaClient} = require("@prisma/client");
 const Room = require("../entities/room");
 module.exports = {
-    createRoom: async (quizId, owner) => {
+    createRoom: async (quizId, owner, io) => {
         const prisma = new PrismaClient();
         const quiz = await prisma.quiz.findUnique({
             where: {
@@ -18,6 +18,9 @@ module.exports = {
         const room = new Room(owner, quiz);
         owner.join(room.id);
         owner.emit('room-created', {id: room.id, quizId: quizId});
+        owner.emit('room-updated', {
+            'size': io.sockets.adapter.rooms.get(room.id).size
+        });
         await prisma.$disconnect();
         return room;
     },
