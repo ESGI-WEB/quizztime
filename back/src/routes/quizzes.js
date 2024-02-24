@@ -12,5 +12,13 @@ module.exports = () => {
     }
   });
 
+  router.post("/", async function (req, res, next) {
+    try {
+      res.send(await quizService.createQuiz(req.user, req.body))
+    } catch (e) {
+      next(e);
+    }
+  });
+
   return router;
 };

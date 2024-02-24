@@ -1,5 +1,5 @@
 interface Quiz {
-    id: number;
+    id?: number;
     title: string;
     questions: Question[];
     passcode?: string;

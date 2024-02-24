@@ -1,7 +1,7 @@
 interface Choice {
-    id: number;
+    id?: number;
     choice: string;
     isCorrect: boolean;
-    question: Question;
-    questionId: number;
+    question?: Question;
+    questionId?: number;
 }

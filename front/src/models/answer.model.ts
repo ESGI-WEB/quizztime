@@ -1,7 +1,7 @@
 interface Answer {
     id: number;
-    user: User;
-    userId: number;
+    userName: string;
+    socketId: string;
     question: Question;
     questionId: number;
 }

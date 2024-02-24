@@ -1,90 +1,107 @@
-import React, { useState } from "react";
-import { TextField, Button } from "@mui/material";
+import {FormEvent, Fragment, useState} from "react";
+import {Button, Divider, TextField} from "@mui/material";
 import CreateQuestion from "../components/CreateQuestion.tsx";
+import useQuizService from "../services/useQuizService";
+import {useNavigate} from "react-router-dom";
 
 export default function CreateQuiz() {
-    const initialQuestion = {
-        id: 1,
+    const initialQuestion: Question = {
         question: "",
         choices: [],
-        quizId: 1,
         answers: [],
     };
 
     const [questions, setQuestions] = useState([initialQuestion]);
-
-    const handleQuestionChange = (index, value) => {
-        const newQuestions = [...questions];
-        newQuestions[index] = { ...newQuestions[index], question: value };
-        setQuestions(newQuestions);
-    };
-
-    const handleChoiceChange = (questionIndex, choiceIndex, value) => {
-        const newQuestions = [...questions];
-        const newChoices = [...newQuestions[questionIndex].choices];
-        newChoices[choiceIndex] = value;
-        newQuestions[questionIndex] = { ...newQuestions[questionIndex], choices: newChoices };
-        setQuestions(newQuestions);
-    };
-
-    const handleAddChoice = (index) => {
-        const newQuestions = [...questions];
-        const newChoices = [...newQuestions[index].choices, ""];
-        newQuestions[index] = { ...newQuestions[index], choices: newChoices };
-        setQuestions(newQuestions);
-    };
-
-    const handleDeleteChoice = (questionIndex, choiceIndex) => {
-        const newQuestions = [...questions];
-        const newChoices = [...newQuestions[questionIndex].choices];
-        newChoices.splice(choiceIndex, 1);
-        newQuestions[questionIndex] = { ...newQuestions[questionIndex], choices: newChoices };
-        setQuestions(newQuestions);
-    };
-
-    const handleAnswerChange = (index, choiceIndex, checked) => {
-        const newQuestions = [...questions];
-        const currentChoices = newQuestions[index].choices;
-        const selectedChoice = currentChoices[choiceIndex];
-        const currentAnswers = newQuestions[index].answers;
-
-        const updatedAnswers = checked
-            ? [...currentAnswers, { index: choiceIndex, label: selectedChoice }]
-            : currentAnswers.filter((answer) => answer.index !== choiceIndex);
-
-        newQuestions[index] = { ...newQuestions[index], answers: updatedAnswers };
-        setQuestions(newQuestions);
-    };
-
+    const [title, setTitle] = useState("");
+    const [passcode, setPasscode] = useState("");
+    const [maxUsers, setMaxUsers] = useState(0);
+    const [saving, setSaving] = useState(false);
+    const quizService = useQuizService();
+    const navigate = useNavigate();
 
     const addQuestion = () => {
-        console.log(questions)
-        const newQuestion = {
-            id: questions.length + 1,
-            question: "",
-            choices: [],
-            quizId: 1,
-            answers: [],
-        };
-        setQuestions([...questions, newQuestion]);
+        setQuestions([...questions, initialQuestion]);
     };
 
+    const onQuestionChange = (index: number, value: Question|null) => {
+        const newQuestions = [...questions];
+
+        if (value === null) {
+            newQuestions.splice(index, 1);
+        } else {
+            newQuestions[index] = value;
+        }
+        setQuestions(newQuestions);
+    }
+
+    const submit = (e: FormEvent) => {
+        e.preventDefault();
+        setSaving(true);
+        quizService.postQuiz({
+            title,
+            passcode,
+            maxUsers,
+            questions,
+        }).then(() => {
+            setSaving(false);
+            navigate("/quizzes");
+        }).catch(() => {
+            setSaving(false);
+        });
+    }
+
+    if (saving) {
+        return <p>Enregistrement en cours...</p>;
+    }
+
     return (
-        <form className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto">
-            {questions.map((question, index) => (
-                <CreateQuestion
-                    key={index}
-                    index={index}
-                    question={question}
-                    onChangeQuestion={handleQuestionChange}
-                    onChangeChoice={handleChoiceChange}
-                    onAddChoice={handleAddChoice}
-                    onDeleteChoice={handleDeleteChoice}
-                    onChangeAnswer={handleAnswerChange}
+        <form className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto" onSubmit={submit}>
+            <h1>Créer un quiz</h1>
+            <TextField
+                label="Nom du quiz"
+                variant="outlined"
+                fullWidth
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+            />
+            <div className="flex gap-16">
+                <TextField
+                    label="Mot de passe ?"
+                    variant="outlined"
+                    fullWidth
+                    value={passcode}
+                    onChange={(e) => setPasscode(e.target.value)}
                 />
+                <TextField
+                    label="Max de participants ?"
+                    variant="outlined"
+                    fullWidth
+                    type="number"
+                    inputProps={{ min: 0 }}
+                    value={maxUsers}
+                    onChange={(e) => setMaxUsers(parseInt(e.target.value))}
+                />
+            </div>
+            <Divider />
+            {questions.map((question, index) => (
+                <Fragment key={index}>
+                    <CreateQuestion
+                        questionObj={question}
+                        questionLabel={`Question ${index + 1}`}
+                        onChangeQuestion={question => onQuestionChange(index, question)}
+                        onDeleteQuestion={() => onQuestionChange(index, null)}
+                        isDeletable={index >= 1}
+                    />
+                    <Divider />
+                </Fragment>
             ))}
             <Button variant="contained" onClick={addQuestion}>
                 Ajouter une question
+            </Button>
+
+            <Button variant="contained" type="submit">
+                Créer le quiz
             </Button>
         </form>
     );
