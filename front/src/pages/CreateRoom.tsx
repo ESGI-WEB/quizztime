@@ -52,6 +52,10 @@ export default function CreateRoom() {
         }
     }
 
+    const startQuiz = () => {
+        socket.emit('start-quiz');
+    }
+
     useEffect(() => {
         queryUserQuizz();
         initOnCreatedRoom();
@@ -78,6 +82,7 @@ export default function CreateRoom() {
                     variant="contained"
                     color="primary"
                     size="large"
+                    onClick={() => startQuiz()}
                 >
                     Commencer le quizz
                 </Button>

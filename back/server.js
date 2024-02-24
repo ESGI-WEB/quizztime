@@ -48,6 +48,33 @@ io.on('connection', (socket) => {
         roomService.hasJoinedRooms(rooms, socket, io, callback);
     });
 
+    socket.on('get-room-size', (callback) => {
+        const room = rooms.find(
+            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
+        );
+
+        if (room) {
+            callback(io.sockets.adapter.rooms.get(room.id).size);
+        }
+    });
+
+    socket.on('start-quiz', () => {
+        const room = rooms.find(
+            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
+        );
+
+        if (room) {
+            roomService.startQuiz(room, io);
+        } else {
+            socket.emit('error', 'You are not in a room');
+        }
+    });
+
+    socket.on('answer', ({choiceId}) => {
+        const extraData = socketsData.find(s => s.socketId === socket.id);
+        roomService.answer(choiceId, extraData, rooms, socket, io);
+    });
+
     socket.on('disconnecting', () => {
         // for each room of the socket
         // - check if room is empty to delete it from rooms

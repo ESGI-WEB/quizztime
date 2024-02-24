@@ -8,6 +8,10 @@ export default function QuizStats(
     const [numberOnline, setNumberOnline] = useState(1);
 
     useEffect(() => {
+        socket.emit('get-room-size', (size: number) => {
+            setNumberOnline(size);
+        });
+
         socket.on('room-updated', (data) => {
             setNumberOnline(data.size);
         });
