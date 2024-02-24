@@ -22,14 +22,35 @@ module.exports = {
         return room;
     },
 
-    joinRoom: (rooms, roomId, socket, io) => {
+    joinRoom: (rooms, socketsData, roomId, name, socket, io) => {
         const room = rooms.find(r => r.id === roomId);
         if (!room) {
             socket.emit('error', 'Room not found');
             return;
         }
 
+        // get names duplicated
+        const socketsWithSameName = socketsData.filter(s => s.name === name && s.socketId !== socket.id);
+        // check duplicates are not in the same room
+        if (socketsWithSameName.some(s => io.sockets.adapter.rooms.get(room.id)?.has(s.socketId))) {
+            socket.emit('error', 'Name already taken in this room');
+            return;
+        }
+
+        const dataIndexToUpdate = socketsData.findIndex(s => s.socketId === socket.id);
+        if (dataIndexToUpdate > -1) {
+            socketsData[dataIndexToUpdate].name = name;
+        } else {
+            socketsData.push({socketId: socket.id, name});
+        }
+
+        // remove all rooms from the socket
+        for (const room of socket.rooms) {
+            socket.leave(room);
+        }
+
         socket.join(room.id);
+        socket.emit('room-joined', {id: room.id, quizId: room.quiz.id});
         io.to(room.id).emit('room-updated', {
             'size': io.sockets.adapter.rooms.get(room.id).size
         });
@@ -40,7 +61,6 @@ module.exports = {
         const socketRoomsJoined = rooms.find(
             room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
         )
-        console.log({socketRoomsJoined});
 
         if (!socketRoomsJoined) {
             callback(null);

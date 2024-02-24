@@ -32,14 +32,16 @@ app.use('/quizzes', auth(), quizzesRouter);
 
 // Socket
 const rooms = [];
+const socketsData = []; // {socketId: 'socketId', ...}
 
 io.on('connection', (socket) => {
     socket.on('create-room', async ({quizId}) => {
+        // Todo add token + user name in extra data
         rooms.push(await roomService.createRoom(quizId, socket));
     });
 
-    socket.on('join-room', ({roomId}) => {
-        roomService.joinRoom(rooms, roomId, socket, io);
+    socket.on('join-room', ({name, roomId}) => {
+        roomService.joinRoom(rooms, socketsData, roomId, name, socket, io);
     });
 
     socket.on('has-rooms-joined', (callback) => {
@@ -62,6 +64,12 @@ io.on('connection', (socket) => {
                     'size': roomSize
                 });
             }
+        }
+
+        // remove socket from socketsData
+        const index = socketsData.findIndex(s => s.socketId === socket.id);
+        if (index > -1) {
+            socketsData.splice(index, 1);
         }
     });
 });

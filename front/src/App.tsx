@@ -9,6 +9,7 @@ import CreateQuiz from "./pages/CreateQuiz.tsx";
 import {useEffect, useState} from "react";
 import {socket} from "./socket";
 import CreateRoom from "./pages/CreateRoom";
+import Quiz from "./pages/Quiz";
 import {Alert, Snackbar} from "@mui/material";
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
                     <Route path="create-room" element={<CreateRoom/>}/>
                     <Route path="quizzes" element={<Quizzes/>}/>
                     <Route path="create-quiz" element={<CreateQuiz/>}/>
+                    <Route path="join-room" element={<Quiz/>}/>
                     <Route path="*" element={<Navigate to="/" replace/>}/>
                 </Routes>
             </div>
