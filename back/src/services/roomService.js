@@ -1,7 +1,7 @@
 const {PrismaClient} = require("@prisma/client");
 const Room = require("../entities/room");
 
-const TIME_TO_ANSWER = 20 * 1000;
+const DEFAULT_TIME_TO_ANSWER = 20 * 1000;
 
 module.exports = {
     findSocketRoom: (rooms, socket, io) => {
@@ -36,7 +36,7 @@ module.exports = {
             currentQuestion: {
                 question: currentQuestion.question,
                 id: currentQuestion.id,
-                timeToAnswer: TIME_TO_ANSWER,
+                timeToAnswer: room.timeToAnswer,
             }
         };
     },
@@ -130,7 +130,7 @@ module.exports = {
         io.to(room.id).emit('quiz-started');
         room.currentQuestion = 0;
         room.quizStarted = true;
-        module.exports.sendCurrentQuestion(room, io, TIME_TO_ANSWER);
+        module.exports.sendCurrentQuestion(room, io, DEFAULT_TIME_TO_ANSWER);
     },
 
     sendNextQuestion: (room, socket, io) => {
@@ -140,11 +140,12 @@ module.exports = {
         }
 
         room.currentQuestion++;
-        module.exports.sendCurrentQuestion(room, io, TIME_TO_ANSWER);
+        module.exports.sendCurrentQuestion(room, io, room.timeToAnswer);
     },
 
     sendCurrentQuestion: (room, io, timeToAnswer) => {
         room.isAcceptingAnswers = true;
+        room.timeToAnswer = timeToAnswer;
 
         const question = room.quiz.questions[room.currentQuestion];
         io.to(room.id).emit('question', {
@@ -260,6 +261,6 @@ module.exports = {
     setTimeToAnswer: (room, io, newTimeToAnswer) => {
         room.timeToAnswer = newTimeToAnswer;
         io.to(room.id).emit('update-time', { timeToAnswer: newTimeToAnswer });
-        module.exports.sendCurrentQuestion(room, io, newTimeToAnswer || TIME_TO_ANSWER);
+        module.exports.sendCurrentQuestion(room, io, newTimeToAnswer);
     }
 }
