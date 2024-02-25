@@ -1,8 +1,6 @@
 const {PrismaClient} = require("@prisma/client");
 const Room = require("../entities/room");
 
-const DEFAULT_TIME_TO_ANSWER = 20 * 1000;
-
 module.exports = {
     findSocketRoom: (rooms, socket, io) => {
         return rooms.find(
