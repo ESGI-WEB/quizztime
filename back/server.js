@@ -60,11 +60,15 @@ io.on('connection', (socket) => {
         roomService.sendMessage(message, rooms, io, socket, socketsData)
     });
 
-    socket.on('get-room-size', (callback) => {
+    socket.on('get-room', (callback) => {
         const room = roomService.findSocketRoom(rooms, socket, io);
-
+        // get room sockets
         if (room) {
-            callback(io.sockets.adapter.rooms.get(room.id).size);
+            if (callback) {
+                callback(roomService.getRoomData(room, socketsData, io));
+            } else {
+                socket.emit('get-room', roomService.getRoomData(room, socketsData, io));
+            }
         }
     });
 

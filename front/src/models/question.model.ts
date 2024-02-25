@@ -1,4 +1,8 @@
-interface Question {
+import {Choice} from "./choice.model";
+import {Answer} from "./answer.model";
+import {Quiz} from "./quiz.model";
+
+export interface Question {
     id?: number;
     question?: string;
     choices?: Choice[];

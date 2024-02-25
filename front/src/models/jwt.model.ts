@@ -1,7 +1,7 @@
 export interface JWTToken {
     id: number;
     email: string;
-    firstName: string;
+    name: string;
     role: string;
 }
 

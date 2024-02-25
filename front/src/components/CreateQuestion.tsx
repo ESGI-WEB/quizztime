@@ -2,6 +2,8 @@ import {TextField, Button} from "@mui/material";
 import {Delete} from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import {useEffect, useState} from "react";
+import {Question} from "../models/question.model";
+import {Choice} from "../models/choice.model";
 
 function CreateQuestion(
     {
