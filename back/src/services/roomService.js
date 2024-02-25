@@ -151,8 +151,7 @@ module.exports = {
                 const userSocketData = socketsData.find(s => s.socketId === socket.id);
                 if (userSocketData) {
                     const { name } = userSocketData;
-                    const messageWithPseudo = `${name}: ${message}`;
-                    io.to(room.id).emit('server-chat-message', messageWithPseudo);
+                    io.to(room.id).emit('server-chat-message', { name, message });
                 } else {
                     socket.emit('error', 'User data not found');
                 }
