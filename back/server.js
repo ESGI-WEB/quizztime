@@ -35,7 +35,8 @@ const rooms = [];
 const socketsData = []; // {socketId: 'socketId', ...}
 
 io.on('connection', (socket) => {
-    console.log('Client connecté:', socket.id); // Log de la connexion du client
+    console.log('Client connecté:', socket.id);
+
     socket.on('create-room', async ({quizId}) => {
         // Todo add token + user name in extra data
         rooms.push(await roomService.createRoom(quizId, socket, io));
@@ -50,8 +51,14 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat-message', (message) => {
-        console.log('Message reçu:', message);
-        io.emit('server-chat-message', message);
+        if (message.roomId) {
+            console.log(`Received message for room ${message.roomId}: ${message.message}`);
+            socket.to(message.roomId).emit('server-chat-message', message.message);
+            console.log('Emitted server-chat-message event');
+
+        } else {
+            console.log('User is not in a room');
+        }
     });
 
     socket.on('get-room-size', (callback) => {

@@ -6,6 +6,7 @@ import {LinearProgress} from "@mui/material";
 import {Room} from "../models/room.model";
 import {useNavigate, useParams} from "react-router-dom";
 import Box from "@mui/material/Box";
+import ChatComponent from "../components/ChatComponent.tsx";
 
 export default function Quiz() {
     const [currentQuestion, setCurrentQuestion] = useState<Question|undefined>(undefined);
@@ -101,6 +102,7 @@ export default function Quiz() {
                     </div>
                 </div>
             )}
+            <ChatComponent roomId={room || ''} />
 
         </div>
     )

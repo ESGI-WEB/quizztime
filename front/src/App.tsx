@@ -11,7 +11,6 @@ import {socket} from "./socket";
 import CreateRoom from "./pages/CreateRoom";
 import JoinQuiz from "./pages/JoinQuiz";
 import {Alert, Snackbar} from "@mui/material";
-import ChatComponent from "./components/ChatComponent.tsx";
 import Quiz from "./pages/Quiz";
 import QuizEnded from "./pages/QuizEnded";
 
@@ -61,7 +60,6 @@ function App() {
                     <Route path="quiz/:room/ended" element={<QuizEnded/>}/>
                     <Route path="*" element={<Navigate to="/" replace/>}/>
                 </Routes>
-                <ChatComponent></ChatComponent>
             </div>
             <Snackbar
                 open={snackBarData !== null}
