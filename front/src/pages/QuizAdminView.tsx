@@ -9,6 +9,7 @@ import {Answer} from "../models/answer.model";
 import {Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
 import {useNavigate, useParams} from "react-router-dom";
 import Typography from "@mui/material/Typography";
+import QuizParameters from "../components/QuizParameters.tsx";
 
 interface ParticipantsAnswers {
     name: string;
@@ -127,9 +128,10 @@ export default function QuizAdminView() {
     return (
         <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto">
             <div className="flex gap-8 flex-justify-between flex-align-center">
-                <h1>Pannel du quizz</h1>
+                <h1>Panel du quizz</h1>
                 <QuizStats/>
             </div>
+            <QuizParameters/>
             {question && !result &&
                 <div>
                     {question.timeToAnswer &&
