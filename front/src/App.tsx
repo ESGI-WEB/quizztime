@@ -10,6 +10,7 @@ import {useEffect, useState} from "react";
 import {socket} from "./socket";
 import CreateRoom from "./pages/CreateRoom";
 import {Alert, Snackbar} from "@mui/material";
+import ChatComponent from "./components/ChatComponent.tsx";
 
 function App() {
     const [isConnected, setIsConnected] = useState(socket.connected);
@@ -50,6 +51,7 @@ function App() {
                     <Route path="create-quiz" element={<CreateQuiz/>}/>
                     <Route path="*" element={<Navigate to="/" replace/>}/>
                 </Routes>
+                <ChatComponent></ChatComponent>
             </div>
             <Snackbar
                 open={snackBarData !== null}

@@ -34,6 +34,7 @@ app.use('/quizzes', auth(), quizzesRouter);
 const rooms = [];
 
 io.on('connection', (socket) => {
+    console.log('Client connecté:', socket.id); // Log de la connexion du client
     socket.on('create-room', async ({quizId}) => {
         rooms.push(await roomService.createRoom(quizId, socket));
     });
@@ -44,6 +45,11 @@ io.on('connection', (socket) => {
 
     socket.on('has-rooms-joined', (callback) => {
         roomService.hasJoinedRooms(rooms, socket, io, callback);
+    });
+
+    socket.on('chat-message', (message) => {
+        console.log('Message reçu:', message);
+        io.emit('server-chat-message', message);
     });
 
     socket.on('disconnecting', () => {
