@@ -8,6 +8,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import {Result} from "../models/result.model";
 import Typography from "@mui/material/Typography";
 import ProgressWithLabel from "../components/ProgressWithLabel";
+import {Question} from "../models/question.model";
 
 export default function Quiz() {
     const [currentQuestion, setCurrentQuestion] = useState<Question|undefined>(undefined);
@@ -120,7 +121,7 @@ export default function Quiz() {
                 </div>
                 <p>La bonne réponse était <Typography
                         component="span"
-                        color={result.choiceId === selectedChoice ? 'success' : 'error'}
+                        color={result.choiceId === selectedChoice ? 'green' : 'error'}
                     >{result.choice}</Typography>
                 </p>
             </>}

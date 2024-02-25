@@ -1,13 +1,44 @@
 const {PrismaClient} = require("@prisma/client");
 const Room = require("../entities/room");
 
-const TIME_TO_ANSWER = 5 * 1000;
+const TIME_TO_ANSWER = 20 * 1000;
 
 module.exports = {
     findSocketRoom: (rooms, socket, io) => {
         return rooms.find(
             room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
         );
+    },
+
+    getRoomData: (room, socketsData, io) => {
+        const sockets = io.sockets.adapter.rooms.get(room.id);
+        const participants = [];
+        if (sockets) {
+            for (const socketId of sockets) {
+                if (socketId === room.owner.id) {
+                    continue;
+                }
+
+                const extraData = socketsData.find(s => s.socketId === socketId);
+                if (!extraData) {
+                    continue;
+                }
+
+                participants.push(extraData.name);
+            }
+        }
+
+        const currentQuestion = room.quiz.questions[room.currentQuestion];
+
+        return {
+            size: io.sockets.adapter.rooms.get(room.id).size,
+            participants,
+            currentQuestion: {
+                question: currentQuestion.question,
+                id: currentQuestion.id,
+                timeToAnswer: TIME_TO_ANSWER,
+            }
+        };
     },
 
     createRoom: async (quizId, owner, io) => {
@@ -119,6 +150,7 @@ module.exports = {
         io.to(room.id).emit('question', {
             timeToAnswer: timeToAnswer,
             question: question.question,
+            id: question.id,
             choices: question.choices.map(c => ({
                 id: c.id,
                 choice: c.choice
@@ -152,7 +184,8 @@ module.exports = {
         });
 
         module.exports.shouldSendQuizEnded(room, io);
-        module.exports.saveAnswers(room); // pas d'await pour ne pas bloquer les events
+        module.exports.saveAnswers(room.currentQuestionAnswers); // pas d'await pour ne pas bloquer les events
+        room.currentQuestionAnswers = [];
     },
 
     shouldSendQuizEnded: (room, io) => {
@@ -189,28 +222,33 @@ module.exports = {
         }
 
         // create or update answer from room.currentQuestionAnswers
-        const answerIndex = room.currentQuestionAnswers
+        let answerIndex = room.currentQuestionAnswers
             .findIndex(a => a.socketId === extraData.socketId);
 
         if (answerIndex > -1) {
             room.currentQuestionAnswers[answerIndex].choiceId = choiceId;
         } else {
-            room.currentQuestionAnswers.push({
+            answerIndex = room.currentQuestionAnswers.push({
                 socketId: extraData.socketId,
                 userName: extraData.name,
                 choiceId: choiceId,
                 questionId: question.id
-            });
+            }) - 1;
         }
+
+        room.owner.emit('participant-answered', {
+            ...room.currentQuestionAnswers[answerIndex],
+            choice,
+        });
     },
 
-    saveAnswers: async (room) => {
-        if (room.currentQuestionAnswers.length <= 0) {
+    saveAnswers: async (currentQuestionAnswers) => {
+        if (currentQuestionAnswers.length <= 0) {
             return;
         }
         const prisma = new PrismaClient();
         await prisma.answer.createMany({
-            data: room.currentQuestionAnswers
+            data: currentQuestionAnswers
         });
         await prisma.$disconnect();
         // TODO renvoyer un event au owner pour lui envoyer les résultats
