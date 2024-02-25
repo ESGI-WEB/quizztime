@@ -17,7 +17,6 @@ export default function Quizzes() {
         quizService.getAllQuizzes()
             .then(quizzes => {
                 setQuizzes(quizzes);
-                console.log(quizzes)
             })
             .catch(error => {
                 console.error("Error fetching quizzes:", error);

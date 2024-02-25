@@ -35,7 +35,6 @@ const rooms = [];
 const socketsData = []; // {socketId: 'socketId', ...}
 
 io.on('connection', (socket) => {
-    console.log('Client connecté:', socket.id);
 
     socket.on('create-room', async ({quizId, name = 'Quiz Owner'}) => {
         // Todo add token verification
