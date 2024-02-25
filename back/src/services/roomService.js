@@ -41,8 +41,10 @@ module.exports = {
         return room;
     },
 
-    joinRoom: (rooms, socketsData, roomId, name, socket, io) => {
+    joinRoom: (rooms, socketsData, roomId, name, socket, io, passcode) => {
         const room = rooms.find(r => r.id === roomId);
+        console.log(passcode)
+        console.log(room.quiz.passcode)
         if (!room) {
             socket.emit('error', 'Room not found');
             return;
@@ -50,6 +52,12 @@ module.exports = {
 
         if (room.quizStarted) {
             socket.emit('error', 'The quiz has already started');
+            return;
+        }
+
+        if (room.quiz.passcode !== passcode) {
+            socket.emit('error', 'wrong password');
+            console.log("mauvais mot de passe")
             return;
         }
 

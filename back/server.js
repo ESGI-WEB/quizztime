@@ -49,8 +49,8 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('join-room', ({name, roomId}) => {
-        roomService.joinRoom(rooms, socketsData, roomId, name, socket, io);
+    socket.on('join-room', ({name, roomId, passcode}) => {
+        roomService.joinRoom(rooms, socketsData, roomId, name, socket, io, passcode);
     });
 
     socket.on('has-rooms-joined', (callback) => {
