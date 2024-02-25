@@ -13,6 +13,7 @@ import JoinQuiz from "./pages/JoinQuiz";
 import {Alert, Snackbar} from "@mui/material";
 import Quiz from "./pages/Quiz";
 import QuizEnded from "./pages/QuizEnded";
+import QuizAdminView from "./pages/QuizAdminView";
 
 function App() {
     const [isConnected, setIsConnected] = useState(socket.connected);
@@ -56,8 +57,9 @@ function App() {
                     <Route path="quizzes" element={<Quizzes/>}/>
                     <Route path="create-quiz" element={<CreateQuiz/>}/>
                     <Route path="join-room" element={<JoinQuiz/>}/>
-                    <Route path="quiz/:room" element={<Quiz/>}/>
                     <Route path="quiz/:room/ended" element={<QuizEnded/>}/>
+                    <Route path="quiz/:room/admin" element={<QuizAdminView/>}/>
+                    <Route path="quiz/:room" element={<Quiz/>}/>
                     <Route path="*" element={<Navigate to="/" replace/>}/>
                 </Routes>
             </div>

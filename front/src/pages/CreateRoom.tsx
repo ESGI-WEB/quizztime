@@ -6,8 +6,8 @@ import useQuizService from "../services/useQuizService";
 import {MenuItem, Select} from "@mui/material";
 import QuizStats from "../components/QuizStats";
 import useUserService from "../services/useUserService";
-import QuizAdminView from "../components/QuizAdminView";
-import {Result} from "../models/result.model";
+import {Quiz} from "../models/quiz.model";
+import {useNavigate} from "react-router-dom";
 
 export default function CreateRoom() {
     const [loading, setLoading] = useState(true);
@@ -16,10 +16,7 @@ export default function CreateRoom() {
     const [room, setRoom] = useState<Room|null>(null);
     const quizService = useQuizService();
     const userService = useUserService();
-    const [hasQuizStarted, setHasQuizStarted] = useState(false);
-    const [question, setQuestion] = useState<Question|null>(null);
-    const [result, setResult] = useState<Result|null>(null);
-    const [hasEnded, setHasEnded] = useState(false);
+    const navigate = useNavigate();
 
     const queryUserQuizz = () => {
         quizService.getAllQuizzes().then(quizzes => {
@@ -44,7 +41,7 @@ export default function CreateRoom() {
         if (!socket.connected) {
             socket.connect();
         }
-        socket.emit('create-room', {quizId: quiz.id, name: userService.currentUser()?.firstName});
+        socket.emit('create-room', {quizId: quiz.id, name: userService.currentUser()?.name});
     };
 
     const initOnCreatedRoom = () => {
@@ -61,39 +58,17 @@ export default function CreateRoom() {
     }
 
     const startQuiz = () => {
+        if (!room) return;
         socket.emit('start-quiz');
+        navigate(`/quiz/${room.id}/admin`);
     }
 
     useEffect(() => {
         queryUserQuizz();
         initOnCreatedRoom();
 
-        socket.on('quiz-started', () => {
-            setHasQuizStarted(true);
-        });
-
-        socket.on('question', (question: Question) => {
-            setQuestion(question);
-            setResult(null);
-        });
-
-        socket.on('question-result', (result: Result) => {
-            // TODO afficher tous les résultats
-            // TODO afficher les résultats en cours de question
-            setResult(result);
-        });
-
-        socket.on('quiz-ended', () => {
-            // TODO afficher fin quiz
-            setHasEnded(true);
-        });
-
         return () => {
             socket.off('room-created');
-            socket.off('quiz-started');
-            socket.off('question');
-            socket.off('question-result');
-            socket.off('quiz-ended');
         }
     }, []);
 
@@ -103,14 +78,6 @@ export default function CreateRoom() {
 
     if (!loading && (!quiz || !quizzes)) {
         return <div>Vous n'avez aucun quizz pour le moment</div>
-    }
-
-    if (hasQuizStarted) {
-        return <QuizAdminView
-            question={question}
-            result={result}
-            hasEnded={hasEnded}
-        />
     }
 
     if (room) {

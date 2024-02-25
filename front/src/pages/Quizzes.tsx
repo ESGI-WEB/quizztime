@@ -6,6 +6,7 @@ import CardActions from '@mui/material/CardActions';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import {useNavigate} from "react-router-dom";
+import {Quiz} from "../models/quiz.model";
 
 
 export default function Quizzes() {
