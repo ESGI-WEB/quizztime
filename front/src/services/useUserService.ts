@@ -2,6 +2,7 @@ import useApi from './useApi';
 import {User, UserPost} from "../models/user.model";
 import {jwtDecode} from "jwt-decode";
 import {JWTToken, tokenKey} from "../models/jwt.model";
+import {socket} from "../socket";
 
 const useUserService = () => {
     const api = useApi();
@@ -22,6 +23,9 @@ const useUserService = () => {
             body: JSON.stringify({email, password}),
         }),
         logout: () => {
+            if (socket.connected) {
+                socket.disconnect();
+            }
             localStorage.removeItem(tokenKey);
         }
     };

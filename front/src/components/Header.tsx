@@ -39,10 +39,16 @@ export default function Header(
                             <small aria-label="disconnected"> 🔴</small>
                         }
                     </Typography>
-                    {!userService.currentUser() && <Button
-                        color="inherit"
-                        onClick={() => navigate("/login")}
-                    >Connexion</Button>}
+                    {!userService.currentUser() && <>
+                        <Button
+                            color="inherit"
+                            onClick={() => navigate("/join-room")}
+                        >Rejoindre une salle</Button>
+                        <Button
+                            color="inherit"
+                            onClick={() => navigate("/login")}
+                        >Connexion</Button>
+                    </>}
                     {userService.currentUser() && <>
                         <Button
                             color="inherit"

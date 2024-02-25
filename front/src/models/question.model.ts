@@ -5,4 +5,5 @@ interface Question {
     quiz?: Quiz;
     quizId?: number;
     answers?: Answer[];
+    timeToAnswer?: number;
 }
