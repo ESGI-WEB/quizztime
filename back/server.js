@@ -58,25 +58,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat-message', (message) => {
-        if (message) {
-            console.log("prepare to emit")
-            const room = rooms.find(room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id));
-            if (room) {
-                const userSocketData = socketsData.find(s => s.socketId === socket.id);
-                if (userSocketData) {
-                    const { name } = userSocketData;
-                    const messageWithPseudo = `${name}: ${message}`;
-                    io.to(room.id).emit('server-chat-message', messageWithPseudo);
-                    console.log('Emitted server-chat-message event');
-                } else {
-                    console.log('User data not found');
-                }
-
-            }
-
-        } else {
-            console.log('User is not in a room');
-        }
+        roomService.sendMessage(message, rooms, io, socket, socketsData)
     });
 
     socket.on('get-room-size', (callback) => {
