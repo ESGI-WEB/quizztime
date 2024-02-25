@@ -25,5 +25,7 @@ docker exec express npx prisma migrate dev --name <fill_migration_name> --create
 
 # Contributions de l'équipe
 - Théo Dubuisson
-- Laurie Morin
+- Laurie Morin :
+  - Réglage du temps par question en temps réel
+  - Amélioration de l'accessibilité
 - Nicolas Wadoux
