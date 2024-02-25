@@ -91,10 +91,11 @@ export default function JoinQuiz() {
                 size="large"
                 type="submit"
                 onClick={joinRoom}
+                aria-live="polite"
+                aria-label="Rejoindre la salle"
             >
                 Rejoindre la salle
             </Button>
-
         </form>
-    )
+    );
 }
