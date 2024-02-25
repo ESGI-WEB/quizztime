@@ -151,6 +151,7 @@ export default function QuizAdminView() {
                             variant="contained"
                             color="primary"
                             onClick={nextQuestion}
+                            aria-label="Démarrer la question suivante"
                         >
                             Démarrer la question suivante
                         </Button>

@@ -53,13 +53,19 @@ export default function Login() {
                 variant="contained"
                 color="primary"
                 type="submit"
-            >Se connecter</Button>
+                aria-label="Se connecter"
+            >
+                Se connecter
+            </Button>
 
             <Button
                 variant="text"
                 color="primary"
                 onClick={() => navigate("/register")}
-            >Créer un compte</Button>
+                aria-label="Créer un compte"
+            >
+                Créer un compte
+            </Button>
         </form>
     );
 }

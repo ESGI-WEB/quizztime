@@ -116,6 +116,7 @@ export default function CreateRoom() {
                 color="primary"
                 size="large"
                 onClick={createRoom}
+                aria-label="Créer une salle"
             >
                 Créer une salle
             </Button>

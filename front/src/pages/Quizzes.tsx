@@ -45,7 +45,10 @@ export default function Quizzes() {
                 <Button
                     size="small"
                     onClick={() => navigate("/create-quiz")}
-                >Créer un Quiz</Button>
+                    aria-label="Créer un Quiz"
+                >
+                    Créer un Quiz
+                </Button>
             </div>
         </div>
     );

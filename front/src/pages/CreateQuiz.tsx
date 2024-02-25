@@ -72,7 +72,7 @@ export default function CreateQuiz() {
             />
             <div className="flex gap-16">
                 <TextField
-                    label="Mot de passe ?"
+                    label="Mot de passe (optionnel)"
                     variant="outlined"
                     fullWidth
                     value={passcode}
