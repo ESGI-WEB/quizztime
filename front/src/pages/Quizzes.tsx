@@ -7,7 +7,6 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import {useNavigate} from "react-router-dom";
 
-
 export default function Quizzes() {
     const [quizzes, setQuizzes] = useState<Quiz[]>([]);
     const quizService = useQuizService();
@@ -17,7 +16,6 @@ export default function Quizzes() {
         quizService.getAllQuizzes()
             .then(quizzes => {
                 setQuizzes(quizzes);
-                console.log(quizzes)
             })
             .catch(error => {
                 console.error("Error fetching quizzes:", error);

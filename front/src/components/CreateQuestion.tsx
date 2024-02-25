@@ -1,6 +1,6 @@
-import { TextField, Button, IconButton } from "@mui/material";
-import { Delete } from "@mui/icons-material";
-import { useEffect, useState } from "react";
+import {TextField, Button, IconButton} from "@mui/material";
+import {Delete} from "@mui/icons-material";
+import {useEffect, useState} from "react";
 
 function CreateQuestion(
     {

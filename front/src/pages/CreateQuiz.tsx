@@ -62,7 +62,6 @@ export default function CreateQuiz() {
         >
             <h1>Créer un quiz</h1>
             <TextField
-                id="quizName"
                 label="Nom du quiz"
                 variant="outlined"
                 fullWidth
