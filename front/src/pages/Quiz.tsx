@@ -31,9 +31,13 @@ export default function Quiz() {
         }
 
         socket.on('question', (question: Question) => {
-            setCurrentQuestion(question)
-            setSelectedChoice(undefined)
             setResult(undefined)
+            setCurrentQuestion((prevQuestion) => {
+                if (prevQuestion?.id !== question.id) {
+                    setSelectedChoice(undefined)
+                }
+                return question;
+            })
         });
 
         socket.on('question-result', (result: Result) => {
@@ -76,57 +80,62 @@ export default function Quiz() {
     }, [selectedChoice]);
 
     return (
-        <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto">
-            <div className="flex gap-8 flex-justify-between flex-align-center">
-                <h1>Quizz</h1>
-                <QuizStats/>
-            </div>
-            {!currentQuestion &&
-                <div className="flex gap-16 flex-align-center">
-                    <p>Veuillez attendre la prochaine question</p>
-                    <CircularProgress
-                        color="primary"
-                        size={20}
-                    />
+        <div className="flex gap-16 flex-wrap align-center col-12 margin-auto">
+            <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto min-400">
+                <div className="flex gap-8 flex-justify-between flex-align-center">
+                    <h1>Quizz</h1>
+                    <QuizStats/>
                 </div>
-            }
-            {currentQuestion && (
-                <div>
-                    {currentQuestion.timeToAnswer &&
-                        <ProgressWithLabel timeLeft={timeLeft} timeToAnswer={currentQuestion.timeToAnswer}/>
-                    }
-
-                    <h2>{currentQuestion.question}</h2>
-                    <div className="flex gap-16 flex-wrap">
-                        {currentQuestion.choices?.map((choice) => (
-                            <Button
-                                key={choice.id}
-                                variant="contained"
-                                color={selectedChoice === choice.id ? 'success' : 'primary'}
-                                onClick={() => setSelectedChoice(choice.id)}
-                            >{choice.choice}</Button>
-                        ))}
+                {!currentQuestion &&
+                    <div className="flex gap-16 flex-align-center">
+                        <p>Veuillez attendre la prochaine question</p>
+                        <CircularProgress
+                            color="primary"
+                            size={20}
+                        />
                     </div>
-                </div>
-            )}
+                }
+                {currentQuestion && (
+                    <div>
+                        {currentQuestion.timeToAnswer &&
+                            <ProgressWithLabel timeLeft={timeLeft} timeToAnswer={currentQuestion.timeToAnswer}/>
+                        }
 
-            {result && <>
-                {result.choiceId === selectedChoice ? <h2>Bravo !</h2> : <h2>Dommage :(</h2>}
-                <div className="flex gap-16 flex-align-center">
-                    <Chip
-                        label={result.numberOfRightAnswers}
-                        color="secondary"
-                        variant="outlined"
-                    />
-                    <span>participants ont répondu correctement</span>
-                </div>
-                <p>La bonne réponse était <Typography
-                        component="span"
-                        color={result.choiceId === selectedChoice ? 'green' : 'error'}
-                    >{result.choice}</Typography>
-                </p>
-            </>}
-            <ChatComponent/>
+                        <h2>{currentQuestion.question}</h2>
+                        <div className="flex gap-16 flex-wrap">
+                            {currentQuestion.choices?.map((choice) => (
+                                <Button
+                                    key={choice.id}
+                                    variant="contained"
+                                    color={selectedChoice === choice.id ? 'success' : 'primary'}
+                                    onClick={() => setSelectedChoice(choice.id)}
+                                >{choice.choice}</Button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {result && <>
+                    {result.choiceId === selectedChoice ? <h2>Bravo !</h2> : <h2>Dommage :(</h2>}
+                    <p>{result.choiceId} === {selectedChoice}</p>
+                    <div className="flex gap-16 flex-align-center">
+                        <Chip
+                            label={result.numberOfRightAnswers}
+                            color="secondary"
+                            variant="outlined"
+                        />
+                        <span>participants ont répondu correctement</span>
+                    </div>
+                    <p>La bonne réponse était <Typography
+                            component="span"
+                            color={result.choiceId === selectedChoice ? 'green' : 'error'}
+                        >{result.choice}</Typography>
+                    </p>
+                </>}
+            </div>
+            <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto">
+                <ChatComponent/>
+            </div>
         </div>
     )
 }

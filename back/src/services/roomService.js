@@ -1,5 +1,6 @@
 const {PrismaClient} = require("@prisma/client");
 const Room = require("../entities/room");
+const {shuffle} = require("../helpers");
 
 module.exports = {
     findSocketRoom: (rooms, socket, io) => {
@@ -82,16 +83,17 @@ module.exports = {
             return;
         }
 
-        const bcrypt = require('bcryptjs');
-        const hashedPasscode = room.quiz.passcode;
-        const isPasscodeCorrect = await bcrypt.compare(passcode, hashedPasscode);
-
-        if (!isPasscodeCorrect) {
-            socket.emit('error', 'Wrong password');
-            return;
+        if (room.quiz.passcode !== null) {
+            const bcrypt = require('bcryptjs');
+            const hashedPasscode = room.quiz.passcode;
+            const isPasscodeCorrect = await bcrypt.compare(passcode, hashedPasscode);
+            if (!isPasscodeCorrect) {
+                socket.emit('error', 'Wrong password');
+                return;
+            }
         }
 
-        if (io.sockets.adapter.rooms.get(room.id).size > room.quiz.maxUsers) {
+        if (room.quiz.maxUsers > 0 && io.sockets.adapter.rooms.get(room.id).size > room.quiz.maxUsers) { // > to not count the owner
             socket.emit('error', 'Room is full');
             return;
         }
@@ -136,12 +138,12 @@ module.exports = {
     },
 
     sendMessage: (message, rooms, io, socket, socketsData) => {
-        if (message) {
+        if (message.trim()) {
             const room = rooms.find(room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id));
             if (room) {
                 const question = room.quiz.questions[room.currentQuestion];
                 const choices = question.choices;
-                const isMessageChoice = choices.some(choice => choice.choice === message);
+                const isMessageChoice = choices.some(choice => message.includes(choice.choice));
                 if (isMessageChoice) {
                     socket.emit('error', 'Choice in message');
                     return;
@@ -154,9 +156,11 @@ module.exports = {
                 } else {
                     socket.emit('error', 'User data not found');
                 }
+            } else {
+                socket.emit('error', 'Not in a room');
             }
         } else {
-            socket.emit('error', 'Not in a room');
+            socket.emit('error', 'Empty message');
         }
     },
 
@@ -186,10 +190,10 @@ module.exports = {
             timeToAnswer: timeToAnswer,
             question: question.question,
             id: question.id,
-            choices: question.choices.map(c => ({
+            choices: shuffle(question.choices.map(c => ({
                 id: c.id,
                 choice: c.choice
-            })),
+            }))),
         });
 
         if (room.answerTimeout) {
