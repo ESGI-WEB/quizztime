@@ -33,7 +33,7 @@ export default function CreateQuiz() {
             newQuestions[index] = value;
         }
         setQuestions(newQuestions);
-    }
+    };
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -49,14 +49,18 @@ export default function CreateQuiz() {
         }).catch(() => {
             setSaving(false);
         });
-    }
+    };
 
     if (saving) {
         return <p>Enregistrement en cours...</p>;
     }
 
     return (
-        <form className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto" onSubmit={submit}>
+        <form
+            aria-label="Formulaire de création de quiz"
+            className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto"
+            onSubmit={submit}
+        >
             <h1>Créer un quiz</h1>
             <TextField
                 label="Nom du quiz"
@@ -68,14 +72,14 @@ export default function CreateQuiz() {
             />
             <div className="flex gap-16">
                 <TextField
-                    label="Mot de passe ?"
+                    label="Mot de passe (optionnel)"
                     variant="outlined"
                     fullWidth
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
                 />
                 <TextField
-                    label="Max de participants ?"
+                    label="Max de participants"
                     variant="outlined"
                     fullWidth
                     type="number"
@@ -90,18 +94,18 @@ export default function CreateQuiz() {
                     <CreateQuestion
                         questionObj={question}
                         questionLabel={`Question ${index + 1}`}
-                        onChangeQuestion={question => onQuestionChange(index, question)}
+                        onChangeQuestion={(question) => onQuestionChange(index, question)}
                         onDeleteQuestion={() => onQuestionChange(index, null)}
                         isDeletable={index >= 1}
                     />
                     <Divider />
                 </Fragment>
             ))}
-            <Button variant="contained" onClick={addQuestion}>
+            <Button variant="contained" onClick={addQuestion} role="button">
                 Ajouter une question
             </Button>
 
-            <Button variant="contained" type="submit">
+            <Button variant="contained" type="submit" role="button">
                 Créer le quiz
             </Button>
         </form>

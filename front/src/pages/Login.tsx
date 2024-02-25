@@ -12,7 +12,7 @@ export default function Login() {
     const navigate = useNavigate();
     const userService = useUserService();
 
-    const sumbit = (e: FormEvent) => {
+    const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         if (!email || !password) {
             setHasError(true);
@@ -25,16 +25,18 @@ export default function Login() {
         }).catch(() => {
             setHasError(true);
         });
-    }
+    };
 
     return (
-        <form className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto" onSubmit={sumbit}>
+        <form className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto" onSubmit={handleSubmit}>
             <h1>Connexion</h1>
             <TextField
                 label="Email"
                 variant="outlined"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
+                fullWidth
             />
             <TextField
                 label="Mot de passe"
@@ -42,20 +44,28 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
+                fullWidth
             />
-            {hasError && <p className="error">Formulaire invalide</p>}
+            {hasError && <p className="error" aria-live="assertive">Formulaire invalide</p>}
 
             <Button
                 variant="contained"
                 color="primary"
                 type="submit"
-            >Se connecter</Button>
+                aria-label="Se connecter"
+            >
+                Se connecter
+            </Button>
 
             <Button
                 variant="text"
                 color="primary"
                 onClick={() => navigate("/register")}
-            >Créer un compte</Button>
+                aria-label="Créer un compte"
+            >
+                Créer un compte
+            </Button>
         </form>
-    )
+    );
 }

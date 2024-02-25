@@ -19,20 +19,20 @@ export default function CreateRoom() {
     const navigate = useNavigate();
 
     const queryUserQuizz = () => {
-        quizService.getAllQuizzes().then(quizzes => {
+        quizService.getAllQuizzes().then((quizzes) => {
             setQuizzes(quizzes);
             setQuiz(quizzes[0]);
-            setLoading(false)
+            setLoading(false);
 
             if (socket.connected) {
                 socket.emit('has-rooms-joined', (room: Room) => {
                     if (room) {
                         setRoom(room);
-                        setQuiz(quizzes.find(quiz => quiz.id === room.quizId) ?? null);
+                        setQuiz(quizzes.find((quizz) => quizz.id === room.quizId) ?? null);
                     }
-                })
+                });
             }
-        })
+        });
     };
 
     const createRoom = () => {
@@ -48,14 +48,14 @@ export default function CreateRoom() {
         socket.on('room-created', (room) => {
             setRoom(room);
         });
-    }
+    };
 
     const setQuizFromId = (id: number) => {
-        const quiz = quizzes.find(quiz => quiz.id === id);
+        const quiz = quizzes.find((quizz) => quizz.id === id);
         if (quiz) {
             setQuiz(quiz);
         }
-    }
+    };
 
     const startQuiz = () => {
         if (!room) return;
@@ -73,17 +73,17 @@ export default function CreateRoom() {
     }, []);
 
     if (loading) {
-        return <div>Chargement en cours...</div>
+        return <div>Chargement en cours...</div>;
     }
 
     if (!loading && (!quiz || !quizzes)) {
-        return <div>Vous n'avez aucun quizz pour le moment</div>
+        return <div>Vous n'avez aucun quizz pour le moment</div>;
     }
 
     if (room) {
         return (
             <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto">
-                <h1>Salle créé</h1>
+                <h1>Salle créée</h1>
                 <p>Code pour rejoindre la salle : {room.id}</p>
                 <Button
                     variant="contained"
@@ -95,7 +95,7 @@ export default function CreateRoom() {
                 </Button>
                 <QuizStats/>
             </div>
-        )
+        );
     }
 
     return (
@@ -116,10 +116,10 @@ export default function CreateRoom() {
                 color="primary"
                 size="large"
                 onClick={createRoom}
+                aria-label="Créer une salle"
             >
                 Créer une salle
             </Button>
-
         </div>
-    )
+    );
 }

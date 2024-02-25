@@ -1,6 +1,5 @@
-import {TextField, Button} from "@mui/material";
+import {TextField, Button, IconButton} from "@mui/material";
 import {Delete} from "@mui/icons-material";
-import IconButton from "@mui/material/IconButton";
 import {useEffect, useState} from "react";
 import {Question} from "../models/question.model";
 import {Choice} from "../models/choice.model";
@@ -21,8 +20,8 @@ function CreateQuestion(
     }
 ) {
     const [question, setQuestion] = useState<string>(questionObj?.question || "");
-    const [answer, setAnswer] = useState<string>(questionObj?.choices?.find(c => c.isCorrect)?.choice || "");
-    const [choices, setChoices] = useState<string[]>([...questionObj?.choices?.filter(c => !c.isCorrect)?.map(choice => choice.choice) || ""]);
+    const [answer, setAnswer] = useState<string>(questionObj?.choices?.find((c) => c.isCorrect)?.choice || "");
+    const [choices, setChoices] = useState<string[]>([...questionObj?.choices?.filter((c) => !c.isCorrect)?.map((choice) => choice.choice) || ""]);
 
     useEffect(() => {
         const allChoices: Choice[] = [];
@@ -32,12 +31,14 @@ function CreateQuestion(
             isCorrect: true,
         });
 
-        allChoices.push(...choices.map((choice) => {
-            return {
-                choice: choice,
-                isCorrect: false,
-            }
-        }));
+        allChoices.push(
+            ...choices.map((choice) => {
+                return {
+                    choice: choice,
+                    isCorrect: false,
+                };
+            })
+        );
 
         onChangeQuestion({
             question,
@@ -49,19 +50,19 @@ function CreateQuestion(
         const newChoices = [...choices];
         newChoices.push("");
         setChoices(newChoices);
-    }
+    };
 
     const updateChoice = (choiceIndex: number, value: string) => {
         const newChoices = [...choices];
         newChoices[choiceIndex] = value;
         setChoices(newChoices);
-    }
+    };
 
     const deleteChoice = (choiceIndex: number) => {
         const newChoices = [...choices];
         newChoices.splice(choiceIndex, 1);
         setChoices(newChoices);
-    }
+    };
 
     return (
         <>
@@ -93,23 +94,26 @@ function CreateQuestion(
                         value={choice}
                         onChange={(e) => updateChoice(choiceIndex, e.target.value)}
                     />
-                    {choiceIndex >= 1 &&
-                        <IconButton onClick={() => deleteChoice(choiceIndex)}>
-                            <Delete/>
+                    {choiceIndex >= 1 && (
+                        <IconButton
+                            onClick={() => deleteChoice(choiceIndex)}
+                            aria-label={`Supprimer le choix ${choiceIndex + 1}`}
+                        >
+                            <Delete />
                         </IconButton>
-                    }
+                    )}
                 </div>
             ))}
 
-            <Button variant="outlined" onClick={() => addChoice()}>
+            <Button variant="outlined" onClick={() => addChoice()} aria-label="Ajouter un faux choix">
                 Ajouter un faux choix
             </Button>
 
-            {isDeletable &&
-                <Button variant="outlined" onClick={() => onDeleteQuestion()}>
+            {isDeletable && (
+                <Button variant="outlined" onClick={() => onDeleteQuestion()} aria-label="Supprimer la question">
                     Supprimer la question
                 </Button>
-            }
+            )}
         </>
     );
 }

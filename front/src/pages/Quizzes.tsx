@@ -8,7 +8,6 @@ import Typography from '@mui/material/Typography';
 import {useNavigate} from "react-router-dom";
 import {Quiz} from "../models/quiz.model";
 
-
 export default function Quizzes() {
     const [quizzes, setQuizzes] = useState<Quiz[]>([]);
     const quizService = useQuizService();
@@ -46,7 +45,10 @@ export default function Quizzes() {
                 <Button
                     size="small"
                     onClick={() => navigate("/create-quiz")}
-                >Créer un Quiz</Button>
+                    aria-label="Créer un Quiz"
+                >
+                    Créer un Quiz
+                </Button>
             </div>
         </div>
     );

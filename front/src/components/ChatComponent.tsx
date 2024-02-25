@@ -52,8 +52,8 @@ function ChatComponent() {
                     variant="outlined"
                     fullWidth
                 />
-                <Button variant="contained" color="primary" onClick={handleMessageSend} style={{ marginLeft: 10 }}>
-                    Send
+                <Button variant="contained" color="primary" onClick={handleMessageSend} style={{ marginLeft: 10 }}  aria-label="Envoyer le message">
+                    Envoyer
                 </Button>
             </div>
         </Paper>

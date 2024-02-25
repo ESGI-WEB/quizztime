@@ -21,55 +21,74 @@ export default function Header(
 
     return (
         <Box sx={{flexGrow: 1}}>
-            <AppBar position="static">
-                <Toolbar>
-                    <IconButton
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="menu"
-                        sx={{mr: 2}}
-                    >
-                        <MenuIcon/>
-                    </IconButton>
-                    <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
-                        QuizzTime
-                        {isConnected ?
-                            <small aria-label="connected"> 🟢</small> :
-                            <small aria-label="disconnected"> 🔴</small>
-                        }
-                    </Typography>
-                    {!userService.currentUser() && <>
-                        <Button
-                            color="inherit"
-                            onClick={() => navigate("/join-room")}
-                        >Rejoindre une salle</Button>
-                        <Button
-                            color="inherit"
-                            onClick={() => navigate("/login")}
-                        >Connexion</Button>
-                    </>}
-                    {userService.currentUser() && <>
-                        <Button
-                            color="inherit"
-                            onClick={() => navigate("/create-room")}
-                        >Créer une salle</Button>
-                        <Button
-                            color="inherit"
-                            onClick={() => navigate("/quizzes")}
-                        >Mes Quizz</Button>
+            <nav>
+                <AppBar position="static">
+                    <Toolbar>
                         <IconButton
+                            size="large"
+                            edge="start"
                             color="inherit"
-                            onClick={() => {
-                                userService.logout();
-                                navigate("/");
-                            }}
+                            aria-label="menu"
+                            sx={{mr: 2}}
                         >
-                            <PersonOff/>
+                            <MenuIcon/>
                         </IconButton>
-                    </>}
-                </Toolbar>
-            </AppBar>
+                        <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
+                            QuizzTime
+                            {isConnected ?
+                                <small aria-label="connected"> 🟢</small> :
+                                <small aria-label="disconnected"> 🔴</small>
+                            }
+                        </Typography>
+                        {!userService.currentUser() &&
+                            <>
+                                <Button
+                                    color="inherit"
+                                    onClick={() => navigate("/join-room")}
+                                    aria-label="Rejoindre une salle"
+                                >
+                                    Rejoindre une salle
+                                </Button>
+                                <Button
+                                    color="inherit"
+                                    onClick={() => navigate("/login")}
+                                    aria-label="Connexion"
+                                >
+                                    Connexion
+                                </Button>
+                            </>
+                        }
+                        {userService.currentUser() &&
+                            <>
+                                <Button
+                                    color="inherit"
+                                    onClick={() => navigate("/create-room")}
+                                    aria-label="Créer une salle"
+                                >
+                                    Créer une salle
+                                </Button>
+                                <Button
+                                    color="inherit"
+                                    onClick={() => navigate("/quizzes")}
+                                    aria-label="Mes Quizz"
+                                >
+                                    Mes Quizz
+                                </Button>
+                                <IconButton
+                                    color="inherit"
+                                    onClick={() => {
+                                        userService.logout();
+                                        navigate("/");
+                                    }}
+                                    aria-label="Déconnexion"
+                                >
+                                    <PersonOff/>
+                                </IconButton>
+                            </>
+                        }
+                    </Toolbar>
+                </AppBar>
+            </nav>
         </Box>
     );
 }

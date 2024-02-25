@@ -18,28 +18,24 @@ export default function ResultsTable(
     }
 ) {
     return (
-        <TableContainer component={Paper}>
-            <Table sx={{minWidth: 150}} aria-label="simple table">
+        <TableContainer component={Paper} aria-label="Résultats du questionnaire">
+            <Table sx={{minWidth: 150}}>
                 <TableHead>
                     <TableRow>
-                        <TableCell>Nom</TableCell>
-                        <TableCell>Points</TableCell>
+                        <TableCell component="th" scope="col">Nom</TableCell>
+                        <TableCell component="th" scope="col">Points</TableCell>
                         {allQuestions.map((question) => (
-                            <TableCell key={question.id} align="right">{question.question}</TableCell>
+                            <TableCell key={question.id} align="right" component="th" scope="col">
+                                {question.question}
+                            </TableCell>
                         ))}
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {participants.map((participant) => (
-                        <TableRow
-                            key={participant.name}
-                        >
-                            <TableCell>
-                                {participant.name}
-                            </TableCell>
-                            <TableCell>
-                                {participant.answers?.filter((answer) => answer.choice?.isCorrect).length}
-                            </TableCell>
+                        <TableRow key={participant.name}>
+                            <TableCell>{participant.name}</TableCell>
+                            <TableCell>{participant.answers?.filter((answer) => answer.choice?.isCorrect).length}</TableCell>
                             {allQuestions.map((question) => {
                                 const answer = participant.answers?.find((answer) => answer.questionId === question.id);
                                 return (
@@ -51,7 +47,7 @@ export default function ResultsTable(
                                             {answer?.choice?.choice ?? 'Non répondu'}
                                         </Typography>
                                     </TableCell>
-                                )
+                                );
                             })}
                         </TableRow>
                     ))}
