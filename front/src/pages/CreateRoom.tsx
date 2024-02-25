@@ -4,6 +4,7 @@ import {useEffect, useState} from "react";
 import {Room} from "../models/room.model";
 import useQuizService from "../services/useQuizService";
 import {MenuItem, Select} from "@mui/material";
+import QuizStats from "../components/QuizStats";
 
 export default function CreateRoom() {
     const [loading, setLoading] = useState(true);
@@ -40,7 +41,6 @@ export default function CreateRoom() {
 
     const initOnCreatedRoom = () => {
         socket.on('room-created', (room) => {
-            console.log('room-created', room);
             setRoom(room);
         });
     }
@@ -52,9 +52,17 @@ export default function CreateRoom() {
         }
     }
 
+    const startQuiz = () => {
+        socket.emit('start-quiz');
+    }
+
     useEffect(() => {
         queryUserQuizz();
         initOnCreatedRoom();
+
+        return () => {
+            socket.off('room-created');
+        }
     }, []);
 
     if (loading) {
@@ -74,9 +82,11 @@ export default function CreateRoom() {
                     variant="contained"
                     color="primary"
                     size="large"
+                    onClick={() => startQuiz()}
                 >
                     Commencer le quizz
                 </Button>
+                <QuizStats/>
             </div>
         )
     }
