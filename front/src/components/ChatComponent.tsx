@@ -1,24 +1,32 @@
-// ChatComponent.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
-
-const socket = io('http://localhost:8081');
 
 const ChatComponent: React.FC = () => {
     const [messages, setMessages] = useState<string[]>([]);
     const [inputMessage, setInputMessage] = useState<string>('');
+    const socketRef = useRef<SocketIOClient.Socket>();
 
     useEffect(() => {
+        // Connexion au socket lors du montage du composant
+        socketRef.current = io('http://localhost:8081');
+
         // Écoute des messages du serveur
-        socket.on('server-chat-message', (message: string) => {
+        socketRef.current.on('server-chat-message', (message: string) => {
             setMessages((prevMessages) => [...prevMessages, message]);
         });
+
+        // Nettoyage : Déconnexion du socket lors du démontage du composant
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
+        };
     }, []);
 
     const handleMessageSend = () => {
         if (inputMessage.trim() !== '') {
             console.log('Sending message:', inputMessage);
-            socket.emit('chat-message', inputMessage);
+            socketRef.current.emit('chat-message', inputMessage);
             setInputMessage('');
         }
     };
