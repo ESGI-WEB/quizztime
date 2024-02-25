@@ -111,14 +111,13 @@ module.exports = {
 
     sendMessage: (message, rooms, io, socket, socketsData) => {
         if (message) {
-            console.log("prepare to emit")
             const room = rooms.find(room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id));
             if (room) {
                 const question = room.quiz.questions[room.currentQuestion];
                 const choices = question.choices;
                 const isMessageChoice = choices.some(choice => choice.choice === message);
                 if (isMessageChoice) {
-                    socket.emit('error', 'Choix dans le message');
+                    socket.emit('error', 'Choice in message');
                     return;
                 }
                 const userSocketData = socketsData.find(s => s.socketId === socket.id);
@@ -126,15 +125,12 @@ module.exports = {
                     const { name } = userSocketData;
                     const messageWithPseudo = `${name}: ${message}`;
                     io.to(room.id).emit('server-chat-message', messageWithPseudo);
-                    console.log('Emitted server-chat-message event');
                 } else {
-                    console.log('User data not found');
+                    socket.emit('error', 'User data not found');
                 }
-
             }
-
         } else {
-            console.log('User is not in a room');
+            socket.emit('error', 'Not in a room');
         }
     },
 
