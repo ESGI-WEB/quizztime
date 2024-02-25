@@ -79,6 +79,13 @@ io.on('connection', (socket) => {
         roomService.startQuiz(room, io);
     });
 
+    socket.on('update-time', ({ timeToAnswer }) => {
+        const room = roomService.findSocketRoom(rooms, socket, io);
+        if (room && room.owner.id === socket.id) {
+            roomService.setTimeToAnswer(room, io, timeToAnswer);
+        }
+    });
+
     socket.on('launch-next-question', () => {
         const room = roomService.findSocketRoom(rooms, socket, io);
 

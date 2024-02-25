@@ -4,6 +4,7 @@ import {socket} from "../socket";
 import ProgressWithLabel from "./ProgressWithLabel";
 import {useEffect, useRef, useState} from "react";
 import QuizStats from "./QuizStats";
+import QuizParameters from "./QuizParameters.tsx";
 
 export default function QuizAdminView(
     {
@@ -55,8 +56,9 @@ export default function QuizAdminView(
 
     return (
         <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto">
+            <QuizParameters/>
             <div className="flex gap-8 flex-justify-between flex-align-center">
-                <h1>Pannel du quizz</h1>
+                <h1>Panel du quizz</h1>
                 <QuizStats/>
             </div>
             {question && !result &&

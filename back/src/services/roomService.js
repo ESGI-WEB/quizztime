@@ -214,5 +214,11 @@ module.exports = {
         });
         await prisma.$disconnect();
         // TODO renvoyer un event au owner pour lui envoyer les résultats
+    },
+
+    setTimeToAnswer: (room, io, newTimeToAnswer) => {
+        room.timeToAnswer = newTimeToAnswer;
+        io.to(room.id).emit('update-time', { timeToAnswer: newTimeToAnswer });
+        module.exports.sendCurrentQuestion(room, io, newTimeToAnswer || TIME_TO_ANSWER);
     }
 }
