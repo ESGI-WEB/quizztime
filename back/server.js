@@ -51,10 +51,19 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat-message', (message) => {
-        if (message.roomId) {
-            console.log(`Received message for room ${message.roomId}: ${message.message}`);
-            socket.to(message.roomId).emit('server-chat-message', message.message);
-            console.log('Emitted server-chat-message event');
+        if (message) {
+            console.log("prepare to emit")
+            const room = rooms.find(
+              room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
+            );
+            console.log(room)
+
+            if (room) {
+
+                io.to(room.id).emit('server-chat-message', message);
+                console.log('Emitted server-chat-message event');
+
+            }
 
         } else {
             console.log('User is not in a room');

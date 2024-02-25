@@ -102,7 +102,7 @@ export default function Quiz() {
                     </div>
                 </div>
             )}
-            <ChatComponent roomId={room || ''} />
+            <ChatComponent/>
 
         </div>
     )
