@@ -157,8 +157,11 @@ module.exports = {
             })),
         });
 
+        if (room.answerTimeout) {
+            clearTimeout(room.answerTimeout);
+        }
 
-        setTimeout(() => {
+        room.answerTimeout = setTimeout(() => {
             room.isAcceptingAnswers = false;
             module.exports.sendQuestionResult(room, io);
         }, timeToAnswer);
