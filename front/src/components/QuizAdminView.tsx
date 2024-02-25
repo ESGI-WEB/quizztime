@@ -56,11 +56,11 @@ export default function QuizAdminView(
 
     return (
         <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto">
-            <QuizParameters/>
             <div className="flex gap-8 flex-justify-between flex-align-center">
                 <h1>Panel du quizz</h1>
                 <QuizStats/>
             </div>
+            <QuizParameters/>
             {question && !result &&
                 <div>
                     {question.timeToAnswer &&
