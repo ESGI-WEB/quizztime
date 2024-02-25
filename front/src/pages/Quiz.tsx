@@ -8,6 +8,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import {Result} from "../models/result.model";
 import Typography from "@mui/material/Typography";
 import ProgressWithLabel from "../components/ProgressWithLabel";
+import ChatComponent from "../components/ChatComponent.tsx";
 import {Question} from "../models/question.model";
 
 export default function Quiz() {
@@ -125,7 +126,7 @@ export default function Quiz() {
                     >{result.choice}</Typography>
                 </p>
             </>}
-
+            <ChatComponent/>
         </div>
     )
 }

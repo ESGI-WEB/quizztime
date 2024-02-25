@@ -35,6 +35,7 @@ const rooms = [];
 const socketsData = []; // {socketId: 'socketId', ...}
 
 io.on('connection', (socket) => {
+
     socket.on('create-room', async ({quizId, name = 'Quiz Owner'}) => {
         // Todo add token verification
         rooms.push(await roomService.createRoom(quizId, socket, io, socketsData));
@@ -47,12 +48,16 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('join-room', ({name, roomId}) => {
-        roomService.joinRoom(rooms, socketsData, roomId, name, socket, io);
+    socket.on('join-room', ({name, roomId, passcode}) => {
+        roomService.joinRoom(rooms, socketsData, roomId, name, socket, io, passcode);
     });
 
     socket.on('has-rooms-joined', (callback) => {
         roomService.hasJoinedRooms(rooms, socket, io, callback);
+    });
+
+    socket.on('chat-message', (message) => {
+        roomService.sendMessage(message, rooms, io, socket, socketsData)
     });
 
     socket.on('get-room', (callback) => {

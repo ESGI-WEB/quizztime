@@ -72,7 +72,7 @@ module.exports = {
         return room;
     },
 
-    joinRoom: (rooms, socketsData, roomId, name, socket, io) => {
+    joinRoom: async (rooms, socketsData, roomId, name, socket, io, passcode) => {
         const room = rooms.find(r => r.id === roomId);
         if (!room) {
             socket.emit('error', 'Room not found');
@@ -84,9 +84,21 @@ module.exports = {
             return;
         }
 
-        // get names duplicated
+        const bcrypt = require('bcryptjs');
+        const hashedPasscode = room.quiz.passcode;
+        const isPasscodeCorrect = await bcrypt.compare(passcode, hashedPasscode);
+
+        if (!isPasscodeCorrect) {
+            socket.emit('error', 'Wrong password');
+            return;
+        }
+
+        if (io.sockets.adapter.rooms.get(room.id).size > room.quiz.maxUsers) {
+            socket.emit('error', 'Room is full');
+            return;
+        }
+
         const socketsWithSameName = socketsData.filter(s => s.name === name && s.socketId !== socket.id);
-        // check duplicates are not in the same room
         if (socketsWithSameName.some(s => io.sockets.adapter.rooms.get(room.id)?.has(s.socketId))) {
             socket.emit('error', 'Name already taken in this room');
             return;
@@ -99,7 +111,6 @@ module.exports = {
             socketsData.push({socketId: socket.id, name});
         }
 
-        // remove all rooms from the socket
         for (const room of socket.rooms) {
             socket.leave(room);
         }
@@ -126,11 +137,36 @@ module.exports = {
         });
     },
 
+    sendMessage: (message, rooms, io, socket, socketsData) => {
+        if (message) {
+            const room = rooms.find(room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id));
+            if (room) {
+                const question = room.quiz.questions[room.currentQuestion];
+                const choices = question.choices;
+                const isMessageChoice = choices.some(choice => choice.choice === message);
+                if (isMessageChoice) {
+                    socket.emit('error', 'Choice in message');
+                    return;
+                }
+                const userSocketData = socketsData.find(s => s.socketId === socket.id);
+                if (userSocketData) {
+                    const { name } = userSocketData;
+                    const messageWithPseudo = `${name}: ${message}`;
+                    io.to(room.id).emit('server-chat-message', messageWithPseudo);
+                } else {
+                    socket.emit('error', 'User data not found');
+                }
+            }
+        } else {
+            socket.emit('error', 'Not in a room');
+        }
+    },
+
     startQuiz: (room, io) => {
         io.to(room.id).emit('quiz-started');
         room.currentQuestion = 0;
         room.quizStarted = true;
-        module.exports.sendCurrentQuestion(room, io, DEFAULT_TIME_TO_ANSWER);
+        module.exports.sendCurrentQuestion(room, io, room.timeToAnswer);
     },
 
     sendNextQuestion: (room, socket, io) => {
@@ -187,8 +223,8 @@ module.exports = {
             namesByResults,
         });
 
-        module.exports.shouldSendQuizEnded(room, io);
-        module.exports.saveAnswers(room.currentQuestionAnswers); // pas d'await pour ne pas bloquer les events
+        const ended = module.exports.shouldSendQuizEnded(room, io);
+        module.exports.saveAnswers(room.currentQuestionAnswers, ended, io, room); // pas d'await pour ne pas bloquer les events
         room.currentQuestionAnswers = [];
     },
 
@@ -246,7 +282,7 @@ module.exports = {
         });
     },
 
-    saveAnswers: async (currentQuestionAnswers) => {
+    saveAnswers: async (currentQuestionAnswers, emitResults = false, io = null, room = null) => {
         if (currentQuestionAnswers.length <= 0) {
             return;
         }
@@ -255,7 +291,22 @@ module.exports = {
             data: currentQuestionAnswers
         });
         await prisma.$disconnect();
-        // TODO renvoyer un event au owner pour lui envoyer les résultats
+
+        if (emitResults) {
+            const socketsIdsAnswers = io.sockets.adapter.rooms.get(room.id);
+            const answers = await prisma.answer.findMany({
+                where: {
+                    socketId: {
+                        in: Array.from(socketsIdsAnswers)
+                    }
+                },
+                include: {
+                    question: true,
+                    choice: true,
+                }
+            });
+            io.to(room.id).emit('quiz-end-results', answers);
+        }
     },
 
     setTimeToAnswer: (room, io, newTimeToAnswer) => {

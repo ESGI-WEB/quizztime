@@ -14,11 +14,17 @@ const getQuizzes = async (user) => {
 
 const createQuiz = async (user, body) => {
     const prisma = new PrismaClient()
+    const bcrypt = require("bcryptjs");
+
+    let hashedPasscode = null;
+    if (body.passcode && body.passcode.length > 0) {
+        hashedPasscode = await bcrypt.hash(body.passcode, 10);
+    }
 
     const quizData = {
         title: body.title,
         maxUsers: isFinite(body.maxUsers) ? body.maxUsers : null,
-        passcode: body.passcode?.length > 0 ? body.passcode : null,
+        passcode: hashedPasscode,
         ownerId: user.id
     }
 
