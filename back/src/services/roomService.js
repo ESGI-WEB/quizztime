@@ -1,9 +1,15 @@
 const {PrismaClient} = require("@prisma/client");
 const Room = require("../entities/room");
 
-const TIME_TO_ANSWER = 20 * 1000;
+const TIME_TO_ANSWER = 5 * 1000;
 
 module.exports = {
+    findSocketRoom: (rooms, socket, io) => {
+        return rooms.find(
+            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
+        );
+    },
+
     createRoom: async (quizId, owner, io) => {
         const prisma = new PrismaClient();
         const quiz = await prisma.quiz.findUnique({
@@ -15,7 +21,7 @@ module.exports = {
                     include: {
                         choices: true
                     }
-                }
+                },
             }
         });
 
@@ -76,9 +82,7 @@ module.exports = {
     },
 
     hasJoinedRooms: (rooms, socket, io, callback) => {
-        const socketRoomsJoined = rooms.find(
-            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
-        )
+        const socketRoomsJoined = module.exports.findSocketRoom(rooms, socket, io);
 
         if (!socketRoomsJoined) {
             callback(null);
@@ -96,30 +100,21 @@ module.exports = {
         room.currentQuestion = 0;
         room.quizStarted = true;
         module.exports.sendCurrentQuestion(room, io, TIME_TO_ANSWER);
-
-        setTimeout(() => {
-            module.exports.sendNextQuestion(room, io);
-        }, TIME_TO_ANSWER);
     },
 
-    sendNextQuestion: (room, io) => {
-        room.currentQuestion++;
-        if (room.currentQuestion >= room.quiz.questions.length) {
-            io.to(room.id).emit('quiz-ended');
-            module.exports.saveAnswers(room).then(() => {
-                // TODO emit results to owner
-            });
+    sendNextQuestion: (room, socket, io) => {
+        if (room.isAcceptingAnswers) {
+            socket.emit('error', 'You cannot skip a question while the quiz is running');
             return;
         }
 
+        room.currentQuestion++;
         module.exports.sendCurrentQuestion(room, io, TIME_TO_ANSWER);
-        setTimeout(() => {
-            module.exports.sendNextQuestion(room, io);
-        }, TIME_TO_ANSWER);
-        module.exports.saveAnswers(room); // pas d'await pour ne pas bloquer les events
     },
 
     sendCurrentQuestion: (room, io, timeToAnswer) => {
+        room.isAcceptingAnswers = true;
+
         const question = room.quiz.questions[room.currentQuestion];
         io.to(room.id).emit('question', {
             timeToAnswer: timeToAnswer,
@@ -129,12 +124,47 @@ module.exports = {
                 choice: c.choice
             })),
         });
+
+
+        setTimeout(() => {
+            room.isAcceptingAnswers = false;
+            module.exports.sendQuestionResult(room, io);
+        }, timeToAnswer);
+    },
+
+    sendQuestionResult: (room, io) => {
+        const question = room.quiz.questions[room.currentQuestion];
+        const rightChoice = question.choices.find(c => c.isCorrect);
+        const numberOfRightAnswers = room.currentQuestionAnswers
+            .filter(a => a.choiceId === rightChoice.id).length;
+        const namesByResults = room.currentQuestionAnswers
+            .map(a => ({
+                name: a.userName,
+                choiceId: a.choiceId,
+                isRight: a.choiceId === rightChoice.id
+            }));
+
+        io.to(room.id).emit('question-result', {
+            choiceId: rightChoice.id,
+            choice: rightChoice.choice,
+            numberOfRightAnswers,
+            namesByResults,
+        });
+
+        module.exports.shouldSendQuizEnded(room, io);
+        module.exports.saveAnswers(room); // pas d'await pour ne pas bloquer les events
+    },
+
+    shouldSendQuizEnded: (room, io) => {
+        if (room.currentQuestion + 1 >= room.quiz.questions.length) {
+            io.to(room.id).emit('quiz-ended');
+            return true;
+        }
+        return false;
     },
 
     answer: (choiceId, extraData, rooms, socket, io) => {
-        const room = rooms.find(
-            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
-        );
+        const room = module.exports.findSocketRoom(rooms, socket, io);
 
         if (!room) {
             socket.emit('error', 'You are not in a room');
@@ -143,6 +173,11 @@ module.exports = {
 
         if (!room.quizStarted) {
             socket.emit('error', 'The quiz has not started yet');
+            return;
+        }
+
+        if (!room.isAcceptingAnswers) {
+            socket.emit('error', 'You cannot answer now');
             return;
         }
 
@@ -178,5 +213,6 @@ module.exports = {
             data: room.currentQuestionAnswers
         });
         await prisma.$disconnect();
+        // TODO renvoyer un event au owner pour lui envoyer les résultats
     }
 }

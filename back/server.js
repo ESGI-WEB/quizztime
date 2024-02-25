@@ -35,9 +35,16 @@ const rooms = [];
 const socketsData = []; // {socketId: 'socketId', ...}
 
 io.on('connection', (socket) => {
-    socket.on('create-room', async ({quizId}) => {
-        // Todo add token + user name in extra data
-        rooms.push(await roomService.createRoom(quizId, socket, io));
+    socket.on('create-room', async ({quizId, name = 'Quiz Owner'}) => {
+        // Todo add token verification
+        rooms.push(await roomService.createRoom(quizId, socket, io, socketsData));
+
+        const dataIndexToUpdate = socketsData.findIndex(s => s.socketId === socket.id);
+        if (dataIndexToUpdate > -1) {
+            socketsData[dataIndexToUpdate].name = name;
+        } else {
+            socketsData.push({socketId: socket.id, name});
+        }
     });
 
     socket.on('join-room', ({name, roomId}) => {
@@ -49,9 +56,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('get-room-size', (callback) => {
-        const room = rooms.find(
-            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
-        );
+        const room = roomService.findSocketRoom(rooms, socket, io);
 
         if (room) {
             callback(io.sockets.adapter.rooms.get(room.id).size);
@@ -59,15 +64,35 @@ io.on('connection', (socket) => {
     });
 
     socket.on('start-quiz', () => {
-        const room = rooms.find(
-            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
-        );
+        const room = roomService.findSocketRoom(rooms, socket, io);
 
-        if (room) {
-            roomService.startQuiz(room, io);
-        } else {
+        if (!room) {
             socket.emit('error', 'You are not in a room');
+            return;
         }
+
+        if (socket.id !== room.owner.id) {
+            socket.emit('error', 'You are not the owner of the room');
+            return;
+        }
+
+        roomService.startQuiz(room, io);
+    });
+
+    socket.on('launch-next-question', () => {
+        const room = roomService.findSocketRoom(rooms, socket, io);
+
+        if (!room) {
+            socket.emit('error', 'You are not in a room');
+            return;
+        }
+
+        if (socket.id !== room.owner.id) {
+            socket.emit('error', 'You are not the owner of the room');
+            return;
+        }
+
+        roomService.sendNextQuestion(room, socket, io);
     });
 
     socket.on('answer', ({choiceId}) => {
