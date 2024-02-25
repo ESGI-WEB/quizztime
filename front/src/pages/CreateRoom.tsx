@@ -46,7 +46,7 @@ export default function CreateRoom() {
     };
 
     const setQuizFromId = (id: number) => {
-        const quiz = quizzes.find((quiz) => quiz.id === id);
+        const quiz = quizzes.find((quizz) => quizz.id === id);
         if (quiz) {
             setQuiz(quiz);
         }
