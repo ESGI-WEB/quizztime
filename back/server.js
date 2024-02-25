@@ -32,18 +32,47 @@ app.use('/quizzes', auth(), quizzesRouter);
 
 // Socket
 const rooms = [];
+const socketsData = []; // {socketId: 'socketId', ...}
 
 io.on('connection', (socket) => {
     socket.on('create-room', async ({quizId}) => {
-        rooms.push(await roomService.createRoom(quizId, socket));
+        // Todo add token + user name in extra data
+        rooms.push(await roomService.createRoom(quizId, socket, io));
     });
 
-    socket.on('join-room', ({roomId}) => {
-        roomService.joinRoom(rooms, roomId, socket, io);
+    socket.on('join-room', ({name, roomId}) => {
+        roomService.joinRoom(rooms, socketsData, roomId, name, socket, io);
     });
 
     socket.on('has-rooms-joined', (callback) => {
         roomService.hasJoinedRooms(rooms, socket, io, callback);
+    });
+
+    socket.on('get-room-size', (callback) => {
+        const room = rooms.find(
+            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
+        );
+
+        if (room) {
+            callback(io.sockets.adapter.rooms.get(room.id).size);
+        }
+    });
+
+    socket.on('start-quiz', () => {
+        const room = rooms.find(
+            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
+        );
+
+        if (room) {
+            roomService.startQuiz(room, io);
+        } else {
+            socket.emit('error', 'You are not in a room');
+        }
+    });
+
+    socket.on('answer', ({choiceId}) => {
+        const extraData = socketsData.find(s => s.socketId === socket.id);
+        roomService.answer(choiceId, extraData, rooms, socket, io);
     });
 
     socket.on('disconnecting', () => {
@@ -51,7 +80,7 @@ io.on('connection', (socket) => {
         // - check if room is empty to delete it from rooms
         // - if room is not empty, emit room-updated event
         for (const room of socket.rooms) {
-            const roomSize = io.sockets.adapter.rooms.get(room).size;
+            const roomSize = io.sockets.adapter.rooms.get(room).size - 1;
             if (roomSize === 0) {
                 const index = rooms.findIndex(r => r.id === room);
                 if (index > -1) {
@@ -62,6 +91,12 @@ io.on('connection', (socket) => {
                     'size': roomSize
                 });
             }
+        }
+
+        // remove socket from socketsData
+        const index = socketsData.findIndex(s => s.socketId === socket.id);
+        if (index > -1) {
+            socketsData.splice(index, 1);
         }
     });
 });

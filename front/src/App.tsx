@@ -9,7 +9,10 @@ import CreateQuiz from "./pages/CreateQuiz.tsx";
 import {useEffect, useState} from "react";
 import {socket} from "./socket";
 import CreateRoom from "./pages/CreateRoom";
+import JoinQuiz from "./pages/JoinQuiz";
 import {Alert, Snackbar} from "@mui/material";
+import Quiz from "./pages/Quiz";
+import QuizEnded from "./pages/QuizEnded";
 
 function App() {
     const [isConnected, setIsConnected] = useState(socket.connected);
@@ -29,11 +32,15 @@ function App() {
         socket.on('error', (error) => {
             setSnackBarData({level: 'error', message: error});
         });
+        socket.on('quiz-started', () => {
+            setSnackBarData({level: 'success', message: 'Le quizz a commencé !'});
+        });
 
         return () => {
             socket.off('connect', onConnect);
             socket.off('disconnect', onDisconnect);
             socket.off('error');
+            socket.off('quiz-started');
         };
     }, []);
 
@@ -48,6 +55,9 @@ function App() {
                     <Route path="create-room" element={<CreateRoom/>}/>
                     <Route path="quizzes" element={<Quizzes/>}/>
                     <Route path="create-quiz" element={<CreateQuiz/>}/>
+                    <Route path="join-room" element={<JoinQuiz/>}/>
+                    <Route path="quiz/:room" element={<Quiz/>}/>
+                    <Route path="quiz/:room/ended" element={<QuizEnded/>}/>
                     <Route path="*" element={<Navigate to="/" replace/>}/>
                 </Routes>
             </div>

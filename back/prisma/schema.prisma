@@ -37,7 +37,7 @@ model Question {
   choices  Choice[]
   quiz     Quiz     @relation(fields: [quizId], references: [id])
   quizId   Int
-  Answer   Answer[]
+  Answers  Answer[]
 }
 
 model Choice {
@@ -46,6 +46,7 @@ model Choice {
   isCorrect  Boolean
   question   Question @relation(fields: [questionId], references: [id])
   questionId Int
+  Answers    Answer[]
 }
 
 model Answer {
@@ -54,4 +55,6 @@ model Answer {
   socketId   String
   question   Question @relation(fields: [questionId], references: [id])
   questionId Int
+  choice     Choice   @relation(fields: [choiceId], references: [id])
+  choiceId   Int
 }

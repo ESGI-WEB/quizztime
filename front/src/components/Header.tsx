@@ -20,7 +20,7 @@ export default function Header(
     const userService = useUserService();
 
     return (
-        <Box sx={{ flexGrow: 1 }}>
+        <Box sx={{flexGrow: 1}}>
             <nav>
                 <AppBar position="static">
                     <Toolbar>
@@ -29,27 +29,36 @@ export default function Header(
                             edge="start"
                             color="inherit"
                             aria-label="menu"
-                            sx={{ mr: 2 }}
+                            sx={{mr: 2}}
                         >
-                            <MenuIcon />
+                            <MenuIcon/>
                         </IconButton>
-                        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                        <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
                             QuizzTime
                             {isConnected ?
                                 <small aria-label="connected"> 🟢</small> :
                                 <small aria-label="disconnected"> 🔴</small>
                             }
                         </Typography>
-                        {!userService.currentUser() && (
-                            <Button
-                                color="inherit"
-                                onClick={() => navigate("/login")}
-                                aria-label="Connexion"
-                            >
-                                Connexion
-                            </Button>
-                        )}
-                        {userService.currentUser() && (
+                        {!userService.currentUser() &&
+                            <>
+                                <Button
+                                    color="inherit"
+                                    onClick={() => navigate("/join-room")}
+                                    aria-label="Rejoindre une salle"
+                                >
+                                    Rejoindre une salle
+                                </Button>
+                                <Button
+                                    color="inherit"
+                                    onClick={() => navigate("/login")}
+                                    aria-label="Connexion"
+                                >
+                                    Connexion
+                                </Button>
+                            </>
+                        }
+                        {userService.currentUser() &&
                             <>
                                 <Button
                                     color="inherit"
@@ -76,7 +85,7 @@ export default function Header(
                                     <PersonOff/>
                                 </IconButton>
                             </>
-                        )}
+                        }
                     </Toolbar>
                 </AppBar>
             </nav>
