@@ -9,6 +9,7 @@ import {Answer} from "../models/answer.model";
 import {useNavigate, useParams} from "react-router-dom";
 import ResultsTable, {ParticipantsAnswers} from "../components/ResultsTable";
 import {Chip} from "@mui/material";
+import QuizParameters from "../components/QuizParameters.tsx";
 
 export default function QuizAdminView() {
     const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -122,9 +123,10 @@ export default function QuizAdminView() {
     return (
         <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto">
             <div className="flex gap-8 flex-justify-between flex-align-center">
-                <h1>Pannel du quizz</h1>
+                <h1>Panel du quizz</h1>
                 <QuizStats/>
             </div>
+            <QuizParameters/>
             {question && !result &&
                 <div>
                     {question.timeToAnswer &&

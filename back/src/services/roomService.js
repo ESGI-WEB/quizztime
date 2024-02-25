@@ -1,7 +1,6 @@
 const {PrismaClient} = require("@prisma/client");
 const Room = require("../entities/room");
-
-const TIME_TO_ANSWER = 10 * 1000;
+const {shuffle} = require("../helpers");
 
 module.exports = {
     findSocketRoom: (rooms, socket, io) => {
@@ -36,7 +35,7 @@ module.exports = {
             currentQuestion: {
                 question: currentQuestion.question,
                 id: currentQuestion.id,
-                timeToAnswer: TIME_TO_ANSWER,
+                timeToAnswer: room.timeToAnswer,
             }
         };
     },
@@ -84,16 +83,17 @@ module.exports = {
             return;
         }
 
-        const bcrypt = require('bcryptjs');
-        const hashedPasscode = room.quiz.passcode;
-        const isPasscodeCorrect = await bcrypt.compare(passcode, hashedPasscode);
-
-        if (!isPasscodeCorrect) {
-            socket.emit('error', 'Wrong password');
-            return;
+        if (room.quiz.passcode !== null) {
+            const bcrypt = require('bcryptjs');
+            const hashedPasscode = room.quiz.passcode;
+            const isPasscodeCorrect = await bcrypt.compare(passcode, hashedPasscode);
+            if (!isPasscodeCorrect) {
+                socket.emit('error', 'Wrong password');
+                return;
+            }
         }
 
-        if (io.sockets.adapter.rooms.get(room.id).size > room.quiz.maxUsers) {
+        if (room.quiz.maxUsers > 0 && io.sockets.adapter.rooms.get(room.id).size > room.quiz.maxUsers) { // > to not count the owner
             socket.emit('error', 'Room is full');
             return;
         }
@@ -138,12 +138,12 @@ module.exports = {
     },
 
     sendMessage: (message, rooms, io, socket, socketsData) => {
-        if (message) {
+        if (message.trim()) {
             const room = rooms.find(room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id));
             if (room) {
                 const question = room.quiz.questions[room.currentQuestion];
                 const choices = question.choices;
-                const isMessageChoice = choices.some(choice => choice.choice === message);
+                const isMessageChoice = choices.some(choice => message.includes(choice.choice));
                 if (isMessageChoice) {
                     socket.emit('error', 'Choice in message');
                     return;
@@ -156,17 +156,24 @@ module.exports = {
                 } else {
                     socket.emit('error', 'User data not found');
                 }
+            } else {
+                socket.emit('error', 'Not in a room');
             }
         } else {
-            socket.emit('error', 'Not in a room');
+            socket.emit('error', 'Empty message');
         }
     },
 
     startQuiz: (room, io) => {
         io.to(room.id).emit('quiz-started');
+        io.to(room.id).emit('room-notification', {
+            level: 'success',
+            message: 'The quiz has started'
+        });
+
         room.currentQuestion = 0;
         room.quizStarted = true;
-        module.exports.sendCurrentQuestion(room, io, TIME_TO_ANSWER);
+        module.exports.sendCurrentQuestion(room, io, room.timeToAnswer);
     },
 
     sendNextQuestion: (room, socket, io) => {
@@ -175,26 +182,35 @@ module.exports = {
             return;
         }
 
+        io.to(room.id).emit('room-notification', {
+            level: 'success',
+            message: 'A new question appears'
+        });
+
         room.currentQuestion++;
-        module.exports.sendCurrentQuestion(room, io, TIME_TO_ANSWER);
+        module.exports.sendCurrentQuestion(room, io, room.timeToAnswer);
     },
 
     sendCurrentQuestion: (room, io, timeToAnswer) => {
         room.isAcceptingAnswers = true;
+        room.timeToAnswer = timeToAnswer;
 
         const question = room.quiz.questions[room.currentQuestion];
         io.to(room.id).emit('question', {
             timeToAnswer: timeToAnswer,
             question: question.question,
             id: question.id,
-            choices: question.choices.map(c => ({
+            choices: shuffle(question.choices.map(c => ({
                 id: c.id,
                 choice: c.choice
-            })),
+            }))),
         });
 
+        if (room.answerTimeout) {
+            clearTimeout(room.answerTimeout);
+        }
 
-        setTimeout(() => {
+        room.answerTimeout = setTimeout(() => {
             room.isAcceptingAnswers = false;
             module.exports.sendQuestionResult(room, io);
         }, timeToAnswer);
@@ -219,6 +235,11 @@ module.exports = {
             namesByResults,
         });
 
+        io.to(room.id).emit('room-notification', {
+            level: 'warning',
+            message: 'Question timer ended'
+        });
+
         const ended = module.exports.shouldSendQuizEnded(room, io);
         module.exports.saveAnswers(room.currentQuestionAnswers, ended, io, room); // pas d'await pour ne pas bloquer les events
         room.currentQuestionAnswers = [];
@@ -227,6 +248,10 @@ module.exports = {
     shouldSendQuizEnded: (room, io) => {
         if (room.currentQuestion + 1 >= room.quiz.questions.length) {
             io.to(room.id).emit('quiz-ended');
+            io.to(room.id).emit('room-notification', {
+                level: 'success',
+                message: 'The quiz has ended !'
+            });
             return true;
         }
         return false;
@@ -303,5 +328,15 @@ module.exports = {
             });
             io.to(room.id).emit('quiz-end-results', answers);
         }
+    },
+
+    setTimeToAnswer: (room, io, newTimeToAnswer) => {
+        room.timeToAnswer = newTimeToAnswer;
+        io.to(room.id).emit('update-time', { timeToAnswer: newTimeToAnswer });
+        io.to(room.id).emit('room-notification', {
+            level: 'warning',
+            message: 'The time to answer has been updated !'
+        });
+        module.exports.sendCurrentQuestion(room, io, newTimeToAnswer);
     }
 }

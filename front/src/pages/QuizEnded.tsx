@@ -48,6 +48,13 @@ export default function QuizEnded() {
             }
         }
 
+        // sort participants by score
+        participants.sort((a, b) => {
+            const scoreA = a.answers?.filter((answer) => answer.choice?.isCorrect).length ?? 0;
+            const scoreB = b.answers?.filter((answer) => answer.choice?.isCorrect).length ?? 0;
+            return scoreB - scoreA;
+        });
+
         setParticipants(participants);
     }, [results]);
 

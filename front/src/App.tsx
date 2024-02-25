@@ -33,8 +33,8 @@ function App() {
         socket.on('error', (error) => {
             setSnackBarData({level: 'error', message: error});
         });
-        socket.on('quiz-started', () => {
-            setSnackBarData({level: 'success', message: 'Le quizz a commencé !'});
+        socket.on('room-notification', ({level, message}) => {
+            setSnackBarData({level, message});
         });
 
         return () => {
@@ -68,14 +68,16 @@ function App() {
                 autoHideDuration={6000}
                 onClose={() => setSnackBarData(null)}
             >
-                <Alert
-                    onClose={() => setSnackBarData(null)}
-                    severity={snackBarData?.level as any}
-                    variant="filled"
-                    sx={{ width: '100%' }}
-                >
-                    {snackBarData?.message}
-                </Alert>
+                <div>
+                    {snackBarData != null && <Alert
+                        onClose={() => setSnackBarData(null)}
+                        severity={snackBarData?.level as any}
+                        variant="filled"
+                        sx={{width: '100%'}}
+                    >
+                        {snackBarData?.message}
+                    </Alert>}
+                </div>
             </Snackbar>
         </BrowserRouter>
     );

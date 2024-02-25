@@ -11,7 +11,7 @@ export default function ProgressWithLabel(
         timeToAnswer: number,
     }
 ) {
-    const normaliseTime = (value: number, maxTime: number) => ((value) * 100) / maxTime;
+    const normalizeTime = (value: number, maxTime: number) => ((value) * 100) / maxTime;
 
     return (
         <Box sx={{width: '100%'}}>
@@ -22,7 +22,7 @@ export default function ProgressWithLabel(
                             timeLeft / 1000 <= 5 ? 'error' : timeLeft / 1000 <= 10 ? 'warning' : 'primary'
                         }
                         variant="determinate"
-                        value={normaliseTime(timeLeft, timeToAnswer)}
+                        value={normalizeTime(timeLeft, timeToAnswer)}
                     />
                 </Box>
                 <Box sx={{minWidth: 35}}>
