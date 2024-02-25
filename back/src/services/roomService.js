@@ -41,10 +41,8 @@ module.exports = {
         return room;
     },
 
-    joinRoom: (rooms, socketsData, roomId, name, socket, io, passcode) => {
+    joinRoom: async (rooms, socketsData, roomId, name, socket, io, passcode) => {
         const room = rooms.find(r => r.id === roomId);
-        console.log(io.sockets.adapter.rooms.get(room.id).size);
-        console.log(room.quiz.maxUsers);
         if (!room) {
             socket.emit('error', 'Room not found');
             return;
@@ -55,15 +53,17 @@ module.exports = {
             return;
         }
 
-        if (room.quiz.passcode !== passcode) {
+        const bcrypt = require('bcryptjs');
+        const hashedPasscode = room.quiz.passcode;
+        const isPasscodeCorrect = await bcrypt.compare(passcode, hashedPasscode);
+
+        if (!isPasscodeCorrect) {
             socket.emit('error', 'Wrong password');
-            console.log("mauvais mot de passe")
             return;
         }
 
         if (io.sockets.adapter.rooms.get(room.id).size > room.quiz.maxUsers) {
             socket.emit('error', 'Room is full');
-            console.log("Salle pleine")
             return;
         }
 
