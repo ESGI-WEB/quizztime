@@ -31,7 +31,7 @@ function ChatComponent() {
     }, []);
 
     return (
-        <Paper elevation={3} style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
+        <Paper elevation={3} style={{ maxWidth: 400, marginTop: 24, padding: 20 }}>
             <Typography variant="h5" gutterBottom>
                 Chat Room
             </Typography>
