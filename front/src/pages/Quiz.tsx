@@ -117,7 +117,6 @@ export default function Quiz() {
 
                 {result && <>
                     {result.choiceId === selectedChoice ? <h2>Bravo !</h2> : <h2>Dommage :(</h2>}
-                    <p>{result.choiceId} === {selectedChoice}</p>
                     <div className="flex gap-16 flex-align-center">
                         <Chip
                             label={result.numberOfRightAnswers}

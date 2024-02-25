@@ -166,6 +166,11 @@ module.exports = {
 
     startQuiz: (room, io) => {
         io.to(room.id).emit('quiz-started');
+        io.to(room.id).emit('room-notification', {
+            level: 'success',
+            message: 'The quiz has started'
+        });
+
         room.currentQuestion = 0;
         room.quizStarted = true;
         module.exports.sendCurrentQuestion(room, io, room.timeToAnswer);
@@ -176,6 +181,11 @@ module.exports = {
             socket.emit('error', 'You cannot skip a question while the quiz is running');
             return;
         }
+
+        io.to(room.id).emit('room-notification', {
+            level: 'success',
+            message: 'A new question appears'
+        });
 
         room.currentQuestion++;
         module.exports.sendCurrentQuestion(room, io, room.timeToAnswer);
@@ -225,6 +235,11 @@ module.exports = {
             namesByResults,
         });
 
+        io.to(room.id).emit('room-notification', {
+            level: 'warning',
+            message: 'Question timer ended'
+        });
+
         const ended = module.exports.shouldSendQuizEnded(room, io);
         module.exports.saveAnswers(room.currentQuestionAnswers, ended, io, room); // pas d'await pour ne pas bloquer les events
         room.currentQuestionAnswers = [];
@@ -233,6 +248,10 @@ module.exports = {
     shouldSendQuizEnded: (room, io) => {
         if (room.currentQuestion + 1 >= room.quiz.questions.length) {
             io.to(room.id).emit('quiz-ended');
+            io.to(room.id).emit('room-notification', {
+                level: 'success',
+                message: 'The quiz has ended !'
+            });
             return true;
         }
         return false;
@@ -314,6 +333,10 @@ module.exports = {
     setTimeToAnswer: (room, io, newTimeToAnswer) => {
         room.timeToAnswer = newTimeToAnswer;
         io.to(room.id).emit('update-time', { timeToAnswer: newTimeToAnswer });
+        io.to(room.id).emit('room-notification', {
+            level: 'warning',
+            message: 'The time to answer has been updated !'
+        });
         module.exports.sendCurrentQuestion(room, io, newTimeToAnswer);
     }
 }
