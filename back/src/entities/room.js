@@ -6,5 +6,7 @@ module.exports = class Room {
         this.currentQuestion = 0;
         this.quizStarted = false;
         this.currentQuestionAnswers = [];
+        this.isAcceptingAnswers = false;
+        this.timeToAnswer = 20 * 1000;
     }
 }

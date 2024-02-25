@@ -2,20 +2,23 @@ import QuizStats from "../components/QuizStats";
 import {useEffect, useRef, useState} from "react";
 import {socket} from "../socket";
 import Button from "@mui/material/Button";
-import {LinearProgress} from "@mui/material";
+import {Chip, CircularProgress} from "@mui/material";
 import {Room} from "../models/room.model";
 import {useNavigate, useParams} from "react-router-dom";
-import Box from "@mui/material/Box";
+import {Result} from "../models/result.model";
+import Typography from "@mui/material/Typography";
+import ProgressWithLabel from "../components/ProgressWithLabel";
+import ChatComponent from "../components/ChatComponent.tsx";
+import {Question} from "../models/question.model";
 
 export default function Quiz() {
     const [currentQuestion, setCurrentQuestion] = useState<Question|undefined>(undefined);
     const [selectedChoice, setSelectedChoice] = useState<number|undefined>(undefined);
+    const [result, setResult] = useState<Result|undefined>(undefined);
     const [timeLeft, setTimeLeft] = useState<number>(0);
     const timerInterval = useRef<any>();
     const navigate = useNavigate();
     const { room } = useParams();
-
-    const normaliseTime = (value: number, maxTime: number) => ((value) * 100) / maxTime;
 
     useEffect(() => {
         if (!socket.connected) {
@@ -28,7 +31,19 @@ export default function Quiz() {
         }
 
         socket.on('question', (question: Question) => {
-            setCurrentQuestion(question)
+            setResult(undefined)
+            setCurrentQuestion((prevQuestion) => {
+                if (prevQuestion?.id !== question.id) {
+                    setSelectedChoice(undefined)
+                }
+                return question;
+            })
+        });
+
+        socket.on('question-result', (result: Result) => {
+            timerInterval.current && clearInterval(timerInterval.current);
+            setCurrentQuestion(undefined);
+            setResult(result);
         });
 
         socket.on('quiz-ended', () => {
@@ -37,6 +52,7 @@ export default function Quiz() {
 
         return () => {
             socket.off('question');
+            socket.off('quiz-ended');
         }
     }, []);
 
@@ -52,6 +68,7 @@ export default function Quiz() {
             setTimeLeft(timingLeft);
             if (timingLeft <= 0) {
                 clearInterval(timerInterval.current);
+                setCurrentQuestion(undefined);
             }
         }, 1000);
     }, [currentQuestion]);
@@ -63,45 +80,61 @@ export default function Quiz() {
     }, [selectedChoice]);
 
     return (
-        <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto">
-            <h1>Quizz</h1>
-            <QuizStats/>
-            {!currentQuestion && <p>Veuillez attendre le début du quizz...</p>}
-            {currentQuestion && (
-                <div>
-                    {currentQuestion.timeToAnswer &&
-                        <Box sx={{ width: '100%' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Box sx={{ width: '100%', mr: 1 }}>
-                                    <LinearProgress
-                                        color={
-                                            timeLeft / 1000 <= 5 ? 'error' : timeLeft / 1000 <= 10 ? 'warning' : 'primary'
-                                        }
-                                        variant="determinate"
-                                        value={normaliseTime(timeLeft, currentQuestion.timeToAnswer)}
-                                    />
-                                </Box>
-                                <Box sx={{ minWidth: 35 }}>
-                                    <p>{timeLeft / 1000} s</p>
-                                </Box>
-                            </Box>
-                        </Box>
-                    }
-
-                    <h2>{currentQuestion.question}</h2>
-                    <div className="flex gap-16 flex-wrap">
-                        {currentQuestion.choices?.map((choice) => (
-                            <Button
-                                key={choice.id}
-                                variant="contained"
-                                color={selectedChoice === choice.id ? 'success' : 'primary'}
-                                onClick={() => setSelectedChoice(choice.id)}
-                            >{choice.choice}</Button>
-                        ))}
-                    </div>
+        <div className="flex gap-16 flex-wrap align-center col-12 margin-auto">
+            <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto min-400">
+                <div className="flex gap-8 flex-justify-between flex-align-center">
+                    <h1>Quizz</h1>
+                    <QuizStats/>
                 </div>
-            )}
+                {!currentQuestion &&
+                    <div className="flex gap-16 flex-align-center">
+                        <p>Veuillez attendre la prochaine question</p>
+                        <CircularProgress
+                            color="primary"
+                            size={20}
+                        />
+                    </div>
+                }
+                {currentQuestion && (
+                    <div>
+                        {currentQuestion.timeToAnswer &&
+                            <ProgressWithLabel timeLeft={timeLeft} timeToAnswer={currentQuestion.timeToAnswer}/>
+                        }
 
+                        <h2>{currentQuestion.question}</h2>
+                        <div className="flex gap-16 flex-wrap">
+                            {currentQuestion.choices?.map((choice) => (
+                                <Button
+                                    key={choice.id}
+                                    variant="contained"
+                                    color={selectedChoice === choice.id ? 'success' : 'primary'}
+                                    onClick={() => setSelectedChoice(choice.id)}
+                                >{choice.choice}</Button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {result && <>
+                    {result.choiceId === selectedChoice ? <h2>Bravo !</h2> : <h2>Dommage :(</h2>}
+                    <div className="flex gap-16 flex-align-center">
+                        <Chip
+                            label={result.numberOfRightAnswers}
+                            color="secondary"
+                            variant="outlined"
+                        />
+                        <span>participants ont répondu correctement</span>
+                    </div>
+                    <p>La bonne réponse était <Typography
+                            component="span"
+                            color={result.choiceId === selectedChoice ? 'green' : 'error'}
+                        >{result.choice}</Typography>
+                    </p>
+                </>}
+            </div>
+            <div className="flex flex-column gap-16 flex-wrap align-center col-6 margin-auto">
+                <ChatComponent/>
+            </div>
         </div>
     )
 }

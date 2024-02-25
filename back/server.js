@@ -35,39 +35,80 @@ const rooms = [];
 const socketsData = []; // {socketId: 'socketId', ...}
 
 io.on('connection', (socket) => {
-    socket.on('create-room', async ({quizId}) => {
-        // Todo add token + user name in extra data
-        rooms.push(await roomService.createRoom(quizId, socket, io));
+
+    socket.on('create-room', async ({quizId, name = 'Quiz Owner'}) => {
+        // Todo add token verification
+        rooms.push(await roomService.createRoom(quizId, socket, io, socketsData));
+
+        const dataIndexToUpdate = socketsData.findIndex(s => s.socketId === socket.id);
+        if (dataIndexToUpdate > -1) {
+            socketsData[dataIndexToUpdate].name = name;
+        } else {
+            socketsData.push({socketId: socket.id, name});
+        }
     });
 
-    socket.on('join-room', ({name, roomId}) => {
-        roomService.joinRoom(rooms, socketsData, roomId, name, socket, io);
+    socket.on('join-room', ({name, roomId, passcode}) => {
+        roomService.joinRoom(rooms, socketsData, roomId, name, socket, io, passcode);
     });
 
     socket.on('has-rooms-joined', (callback) => {
         roomService.hasJoinedRooms(rooms, socket, io, callback);
     });
 
-    socket.on('get-room-size', (callback) => {
-        const room = rooms.find(
-            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
-        );
+    socket.on('chat-message', (message) => {
+        roomService.sendMessage(message, rooms, io, socket, socketsData)
+    });
 
+    socket.on('get-room', (callback) => {
+        const room = roomService.findSocketRoom(rooms, socket, io);
+        // get room sockets
         if (room) {
-            callback(io.sockets.adapter.rooms.get(room.id).size);
+            if (callback) {
+                callback(roomService.getRoomData(room, socketsData, io));
+            } else {
+                socket.emit('get-room', roomService.getRoomData(room, socketsData, io));
+            }
         }
     });
 
     socket.on('start-quiz', () => {
-        const room = rooms.find(
-            room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id)
-        );
+        const room = roomService.findSocketRoom(rooms, socket, io);
 
-        if (room) {
-            roomService.startQuiz(room, io);
-        } else {
+        if (!room) {
             socket.emit('error', 'You are not in a room');
+            return;
         }
+
+        if (socket.id !== room.owner.id) {
+            socket.emit('error', 'You are not the owner of the room');
+            return;
+        }
+
+        roomService.startQuiz(room, io);
+    });
+
+    socket.on('update-time', ({ timeToAnswer }) => {
+        const room = roomService.findSocketRoom(rooms, socket, io);
+        if (room && room.owner.id === socket.id) {
+            roomService.setTimeToAnswer(room, io, timeToAnswer);
+        }
+    });
+
+    socket.on('launch-next-question', () => {
+        const room = roomService.findSocketRoom(rooms, socket, io);
+
+        if (!room) {
+            socket.emit('error', 'You are not in a room');
+            return;
+        }
+
+        if (socket.id !== room.owner.id) {
+            socket.emit('error', 'You are not the owner of the room');
+            return;
+        }
+
+        roomService.sendNextQuestion(room, socket, io);
     });
 
     socket.on('answer', ({choiceId}) => {

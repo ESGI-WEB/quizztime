@@ -1,4 +1,5 @@
 import useApi from './useApi';
+import {Quiz} from "../models/quiz.model";
 
 const useQuizService = () => {
     const api = useApi();

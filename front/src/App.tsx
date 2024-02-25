@@ -13,6 +13,7 @@ import JoinQuiz from "./pages/JoinQuiz";
 import {Alert, Snackbar} from "@mui/material";
 import Quiz from "./pages/Quiz";
 import QuizEnded from "./pages/QuizEnded";
+import QuizAdminView from "./pages/QuizAdminView";
 
 function App() {
     const [isConnected, setIsConnected] = useState(socket.connected);
@@ -32,8 +33,8 @@ function App() {
         socket.on('error', (error) => {
             setSnackBarData({level: 'error', message: error});
         });
-        socket.on('quiz-started', () => {
-            setSnackBarData({level: 'success', message: 'Le quizz a commencé !'});
+        socket.on('room-notification', ({level, message}) => {
+            setSnackBarData({level, message});
         });
 
         return () => {
@@ -56,8 +57,9 @@ function App() {
                     <Route path="quizzes" element={<Quizzes/>}/>
                     <Route path="create-quiz" element={<CreateQuiz/>}/>
                     <Route path="join-room" element={<JoinQuiz/>}/>
-                    <Route path="quiz/:room" element={<Quiz/>}/>
                     <Route path="quiz/:room/ended" element={<QuizEnded/>}/>
+                    <Route path="quiz/:room/admin" element={<QuizAdminView/>}/>
+                    <Route path="quiz/:room" element={<Quiz/>}/>
                     <Route path="*" element={<Navigate to="/" replace/>}/>
                 </Routes>
             </div>
@@ -66,14 +68,16 @@ function App() {
                 autoHideDuration={6000}
                 onClose={() => setSnackBarData(null)}
             >
-                <Alert
-                    onClose={() => setSnackBarData(null)}
-                    severity={snackBarData?.level as any}
-                    variant="filled"
-                    sx={{ width: '100%' }}
-                >
-                    {snackBarData?.message}
-                </Alert>
+                <div>
+                    {snackBarData != null && <Alert
+                        onClose={() => setSnackBarData(null)}
+                        severity={snackBarData?.level as any}
+                        variant="filled"
+                        sx={{width: '100%'}}
+                    >
+                        {snackBarData?.message}
+                    </Alert>}
+                </div>
             </Snackbar>
         </BrowserRouter>
     );

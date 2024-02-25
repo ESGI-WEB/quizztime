@@ -5,6 +5,9 @@ import {Room} from "../models/room.model";
 import useQuizService from "../services/useQuizService";
 import {MenuItem, Select} from "@mui/material";
 import QuizStats from "../components/QuizStats";
+import useUserService from "../services/useUserService";
+import {Quiz} from "../models/quiz.model";
+import {useNavigate} from "react-router-dom";
 
 export default function CreateRoom() {
     const [loading, setLoading] = useState(true);
@@ -12,6 +15,8 @@ export default function CreateRoom() {
     const [quiz, setQuiz] = useState<Quiz|null>(null);
     const [room, setRoom] = useState<Room|null>(null);
     const quizService = useQuizService();
+    const userService = useUserService();
+    const navigate = useNavigate();
 
     const queryUserQuizz = () => {
         quizService.getAllQuizzes().then((quizzes) => {
@@ -36,7 +41,7 @@ export default function CreateRoom() {
         if (!socket.connected) {
             socket.connect();
         }
-        socket.emit('create-room', {quizId: quiz.id});
+        socket.emit('create-room', {quizId: quiz.id, name: userService.currentUser()?.name});
     };
 
     const initOnCreatedRoom = () => {
@@ -53,7 +58,9 @@ export default function CreateRoom() {
     };
 
     const startQuiz = () => {
+        if (!room) return;
         socket.emit('start-quiz');
+        navigate(`/quiz/${room.id}/admin`);
     }
 
     useEffect(() => {

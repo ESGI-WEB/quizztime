@@ -3,6 +3,7 @@ import {Button, Divider, TextField} from "@mui/material";
 import CreateQuestion from "../components/CreateQuestion.tsx";
 import useQuizService from "../services/useQuizService";
 import {useNavigate} from "react-router-dom";
+import {Question} from "../models/question.model";
 
 export default function CreateQuiz() {
     const initialQuestion: Question = {
