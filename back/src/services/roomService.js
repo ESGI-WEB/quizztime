@@ -67,9 +67,7 @@ module.exports = {
             return;
         }
 
-        // get names duplicated
         const socketsWithSameName = socketsData.filter(s => s.name === name && s.socketId !== socket.id);
-        // check duplicates are not in the same room
         if (socketsWithSameName.some(s => io.sockets.adapter.rooms.get(room.id)?.has(s.socketId))) {
             socket.emit('error', 'Name already taken in this room');
             return;
@@ -82,7 +80,6 @@ module.exports = {
             socketsData.push({socketId: socket.id, name});
         }
 
-        // remove all rooms from the socket
         for (const room of socket.rooms) {
             socket.leave(room);
         }

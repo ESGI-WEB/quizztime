@@ -125,9 +125,7 @@ export default function Quiz() {
                     >{result.choice}</Typography>
                 </p>
             </>}
-
             <ChatComponent/>
-
         </div>
     )
 }
