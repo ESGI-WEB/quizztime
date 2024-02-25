@@ -28,6 +28,7 @@
     - Mise en place de Socket.IO
     - Mise en place de la DB
     - Mise en place du chat en direct
+    - Mise en place du système anti triche
     - Formulaire de Création de quizz
     - Mise en place du listing des quizz
     - Dockerisation

@@ -142,8 +142,9 @@ module.exports = {
             const room = rooms.find(room => io.sockets.adapter.rooms.get(room.id)?.has(socket.id));
             if (room) {
                 const question = room.quiz.questions[room.currentQuestion];
-                const choices = question.choices;
-                const isMessageChoice = choices.some(choice => message.includes(choice.choice));
+                const choices = question.choices.map(choice => choice.choice.toLowerCase());
+                const messageLower = message.toLowerCase();
+                const isMessageChoice = choices.some(choice => messageLower.includes(choice));
                 if (isMessageChoice) {
                     socket.emit('error', 'Choice in message');
                     return;
